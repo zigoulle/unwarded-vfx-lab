@@ -218,11 +218,11 @@ static func retime(elapsed: float, anchor: float, total: float, start: float, hi
 ## into the move this state shows), hit_s (its hit marker: the clip is
 ## retimed to show it on the move's first active tick)}; {} outside a swing.
 ## A channel's (the tornado) too: its hit where its looping clip shows its
-## hit marker (FxMoves.hit_s), and its `channel` {on (MoveKit
+## hit marker (FxMoves.hit_s), and its `channel` {on (the game's simulation
 ## is_channelling: not in its recovery), radius_m (his own kit's, his boons'
 ## wider one too), length_s (when it ends if nothing breaks it)}.
 ## The blink (ticket 05) casts too: it hits nothing, so its hit marker is
-## its end, his arrival (MoveKit.frames_before_active).
+## its end, his arrival (the game's simulation).
 ## His ultimate's (the time slow) too: its hit the cast's completing tick.
 ## Each carries its `hit` area (FxReach.hit_of of the move's data, his boons'
 ## wider reach too): the preset's ground footprint is ratios of its reach.

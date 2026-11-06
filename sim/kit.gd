@@ -1,23 +1,18 @@
-## Kits (GLOSSARY "Kit"; Duelist spec "The kit seam"): what one character
-## brings to a run that another does not share, as tuning. Node-free, pure
-## static.
+## Kits: what one character brings, as tuning. Node-free, pure static.
 ##
-## The mage's kit is his own page, mage.cfg (MAGE_PAGE): [mage.combo],
+## The Mage's kit is his own page, mage.cfg (MAGE_PAGE): [mage.combo],
 ## [mage.ultimate], every [mage.move.<name>] row. Tuning reads them as the
-## unprefixed sections his kit has always played ([combo], [ultimate],
-## [move.<name>], header_of / from_header), so the merged values, and all
-## that reads them, are as before his page moved; his rows' hit-stop and
-## knockback stay on the shared feel page. Another character's kit lives on
-## its own page (PAGES), every section prefixed with its id and kept so in
-## the merged values: [duelist.combo], [duelist.move.light_1], [duelist.ultimate],
-## [duelist.parry]... Each validates as the section without its prefix would
-## (Tuning), so his rows run through the same Moves and MoveKit code as the
-## mage's. Everything else (walking, HP, the dodge and its meter, the blink,
-## potions, the drink, lives, the enemies, the zone) is common to every kit.
+## unprefixed sections his kit plays ([combo], [ultimate], [move.<name>],
+## header_of / from_header); his rows' hit-stop and knockback stay on the
+## feel page. In the game, another character's kit lives on its own page
+## (PAGES), every section prefixed with its id ([<id>.combo],
+## [<id>.move.light_1]); the lab has only the Mage, so PAGES is empty.
+## Everything else (the blink, the dodge, the drink, [player]) is common to
+## every kit.
 ##
 ## tuning_of turns merged tuning (Tuning.parse's values) into the tuning one
 ## kit plays: the common sections plus its own, prefix stripped. MoveKit
-## builds one per character a player plays (MoveKit.for_character).
+## builds the Mage's from it.
 class_name Kit
 extends RefCounted
 
@@ -34,7 +29,7 @@ const PAGES := {}
 const OWN_SECTIONS: Array[String] = ["combo", "ultimate"]
 
 
-## The character id `player` (a MoveKit player) plays: its `character`,
+## The character id `player` (a player record of the game) plays: its `character`,
 ## the mage when it has none.
 static func id_of(player: Dictionary) -> String:
 	return str(player.get("character", MAGE))

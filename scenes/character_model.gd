@@ -79,11 +79,9 @@ func strike_hit(_at: Vector3) -> void:
 	pass
 
 
-## The kit `kit` (the player's own MoveKit: his character, boons, rage
-## and fusion, MoveKit.for_player) and the common [look] values `look`:
-## every input the model's move effects read. The one path that feeds them,
-## in a run, in the capture scene and in the character select alike
-## (PlayerAvatar calls it each frame). Nothing by default.
+## The kit `kit` (his moves as frames, MoveKit) and the common [look]
+## values `look`: every input the model's move effects read. Nothing by
+## default.
 func read_kit(_kit: MoveKit, _look: Dictionary) -> void:
 	pass
 
@@ -96,10 +94,10 @@ func take_shake_kicks() -> Array:
 	return []
 
 
-## A pack's character's effects from its kit's state (MoveKit.KIT_STATE), each drawn
+## A pack's character's effects from its kit's state (the game's simulation), each drawn
 ## frame. `view`: {move, move_frame, move_tick, position (his ground point), heading, facing,
 ## ground, to_world (ground points to the world), now_tick, tick_factor, actor, low, down,
-## kit_ints (MoveKit.KIT_INTS as this peer sees them)}. Nothing by default.
+## kit_ints (the game's simulation as this peer sees them)}. Nothing by default.
 func show_kit_state(_kit: MoveKit, _state: Dictionary, _view: Dictionary) -> void:
 	pass
 

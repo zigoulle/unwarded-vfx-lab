@@ -10,7 +10,7 @@ extends RefCounted
 
 ## The pivot's frame: the ground's frame at the player (`up`, heading
 ## `forward`) turned `yaw_deg` round his up (the mouse; yaw 0 looks along
-## the heading, 90 along its left, as MoveKit.camera_forward).
+## the heading, 90 along its left, as the game's simulation).
 static func pivot_basis(up: Vector3, forward: Vector3, yaw_deg: float) -> Basis:
 	return Basis(up, deg_to_rad(yaw_deg)) * frame(up, forward)
 

@@ -6,19 +6,23 @@
 ## tools/make_gif.sh turns those into docs/images/knobs-live.gif.
 extends Node
 
+## Where the guide's pictures go, and where the GIF's frames go.
 const OUT := "res://docs/images"
 const GIF_FRAMES := "user://gif_frames"
 ## The GIF: this many frames, the knobs moving across them.
 const GIF_COUNT := 72
 
+## The lab being captured.
 var _lab: Node3D
 
 
+## A 1600x900 window, then the captures once the scene is in the tree.
 func _ready() -> void:
 	get_window().size = Vector2i(1600, 900)
 	_run.call_deferred()
 
 
+## Every picture in turn, the GIF's frames last, then quits.
 func _run() -> void:
 	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(OUT))
 	_lab = (load("res://vfx_lab/vfx_lab.tscn") as PackedScene).instantiate()

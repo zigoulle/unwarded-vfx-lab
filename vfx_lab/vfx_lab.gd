@@ -120,9 +120,6 @@ var _spell: OptionButton
 ## The fps counter (top left), the help box (bottom left; H) and the
 ## explanations in it (the cast, the cost, the budget, the reach).
 var _readout: Label
-## The full-screen flash an effect gives its caster's own screen (none of
-## the Mage's today; screen_alpha).
-var _screen_flash: ColorRect
 var _help: PanelContainer
 var _info: Label
 var _meter := Cost.new()
@@ -259,7 +256,7 @@ func reach() -> Dictionary:
 
 ## The reach slider moved to `value` (m): the effect and outline are drawn
 ## at it (the pages' text in memory changed, never the files).
-func set_reach(value: float, _done: bool = true) -> String:
+func set_reach(value: float) -> String:
 	if _reach.is_empty():
 		return "no reach to set"
 	var shown := Reach.edited(_pages, _reach, value)
@@ -281,7 +278,6 @@ func _sync_reach() -> void:
 	var own := _plays_own_move() and FxReach.has_hit(recipe)
 	_reach = Reach.spot_of(_pages, character, move, FxMoves.data_of(_sim, move)) if own else {}
 	_presets.show_reach(_reach)
-	_presets.show_reach({}, 1)
 
 
 ## The readout's text: the fps counter's, then the help box's explanations.
@@ -409,7 +405,7 @@ func use_recipe(id: String) -> void:
 	else:
 		_presets = Presets.new(id, script.default_preset(), script.DEFAULT_NAME, script.KNOBS, script.ADVANCED_KNOBS)
 	_presets.edited.connect(func() -> void: _show(0.0))
-	_presets.reach_moved.connect(func(value: float, done: bool) -> void: set_reach(value, done))
+	_presets.reach_moved.connect(func(value: float, _done: bool) -> void: set_reach(value))
 	_hud.add_child(_presets)
 	_presets.offset_top = _picker.get_combined_minimum_size().y
 	var own := FxMoves.of_recipe(id)
@@ -492,13 +488,7 @@ func _game_pose(t: float) -> Dictionary:
 	if elapsed <= float(_sim.move_length(move)):
 		var whole := floorf(elapsed)
 		state = {"move": move, "move_frame": int(whole) + 2, "hitstop": 0, "tick_factor": elapsed - whole}
-	# An effect that goes on past its cast says what the game's state would
-	# hold then, and how far he has turned with it: the lab runs no game.
-	if _effect != null and _effect.has_method("pose_state"):
-		state.merge(_effect.pose_state(t), true)
 	var shown: Dictionary = _caster.clip_pose(_sim, state)
-	if _effect != null and _effect.has_method("pose_yaw_deg"):
-		shown["yaw_deg"] = float(shown.get("yaw_deg", 0.0)) + float(_effect.pose_yaw_deg(t))
 	shown["streak"] = false
 	return shown
 
@@ -579,27 +569,17 @@ func _show(delta: float = 0.0) -> void:
 	if "hit" in _effect:
 		_effect.hit = hit()
 	_sync_reach()
-	if _outline != null and not _effect.has_method("hit_outline"):
+	if _outline != null:
 		var own := FxMoves.data_of(_sim, move) if _plays_own_move() and FxReach.has_hit(recipe) else {}
-		if own.has(FxReach.WAVE_LENGTH_KEY) and _effect.has_method("turned_rad"):
-			own = own.duplicate()
-			own[HitOutline.TURNED_KEY] = _effect.turned_rad(clock.time if _cast else 0.0)
-		_outline.show_for(own, _stand_at if own.has("half_width_m") else _caster.position)
+		_outline.show_for(own, _caster.position)
 	FxBloom.apply(get_world_3d().environment, drawn.bloom, drawn.drawn_intensity())
 	_effect.position = _caster.position + EFFECT_AT
-	# A recipe that reads its kit's rows or its caster's sockets and clip markers.
-	if _effect.has_method("set_kit"):
-		_effect.set_kit(_sim)
-	if _effect.has_method("set_caster"):
-		_effect.set_caster(_caster)
+	# What each recipe asks of its cast (the ones a recipe has: set_centre,
+	# set_ground, set_base, set_path).
 	if _effect.has_method("set_centre"):
 		_effect.set_centre(_caster.position)
 	if _effect.has_method("set_ground"):
 		_effect.set_ground(_ground, _caster.position.y)
-	# A hit that lands away from him (a lob): outlined where the recipe says it lands.
-	if _outline != null and _effect.has_method("hit_outline"):
-		var away: Dictionary = _effect.hit_outline()
-		_outline.show_for(away["data"], away["at"])
 	if _effect.has_method("set_base"):
 		_effect.set_base(_caster.position)
 	if _effect.has_method("set_path"):
@@ -625,22 +605,9 @@ func _play_cast(delta: float) -> void:
 	else:
 		_effect.show_at(0, -1.0)
 		_shown_t = INF
-	_show_screen_flash()
 	_shake_offset = _shake.offset(maxf(delta, 0.0))
 	_place_camera()
 	_write_readout()
-
-
-## The full-screen flash the effect gives its caster's own screen now (0
-## with none), as the game's HUD draws it.
-func screen_flash() -> float:
-	return _screen_flash.color.a if _screen_flash.visible else 0.0
-
-
-func _show_screen_flash() -> void:
-	var alpha: float = _effect.screen_alpha() if _cast and _effect.has_method("screen_alpha") else 0.0
-	_screen_flash.visible = alpha > 0.0
-	_screen_flash.color = Color(_presets.drawn_preset().core_colour, alpha)
 
 
 # --- Scene ---------------------------------------------------------------------
@@ -752,12 +719,6 @@ func _add_hud() -> void:
 	_hud = CanvasLayer.new()
 	_hud.name = "Hud"
 	add_child(_hud)
-	_screen_flash = ColorRect.new()
-	_screen_flash.name = "ScreenFlash"
-	_screen_flash.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	_screen_flash.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_screen_flash.visible = false
-	_hud.add_child(_screen_flash)
 	_readout = Label.new()
 	_readout.name = "Readout"
 	_readout.position = Vector2(12, 10)

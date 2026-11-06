@@ -5,14 +5,14 @@
 ## the exit, entrance 2, toward the ash forest: VolcanoZone.ring_exit_deg,
 ## -Z without one), rock pillars standing on the ring, lava vents, the
 ## lavafall's two burning outer lanes, and the spots enemies climb out of
-## the lava from. Ground points are Vector2(x, z), as in MoveKit. Pure
+## the lava from. Ground points are Vector2(x, z), as in the game's simulation. Pure
 ## static functions of the tuning (the whole set of values by section) and
 ## the pillars' state, so rollback replays agree.
 ##
 ## Angles (deg) run from the entrance (+Z) toward +X: a point at angle a,
 ## r metres out, is Vector2(sin a, cos a) * r.
 ##
-## Pillars' state (MoveKit `pillars`): one {hits, down} per pillar spot:
+## Pillars' state (the game's simulation `pillars`): one {hits, down} per pillar spot:
 ## hits = golem slams taken since it last stood up; down = ticks until it
 ## stands again (0 = standing). While down it is a stump anyone walks over;
 ## over its last rise_frames ticks the rising telegraph shows. A missing
@@ -373,7 +373,7 @@ static func _segment_distance(a: Vector2, b: Vector2, c: Vector2) -> float:
 ## in the way: the pit (`around_pit`, walkers: along the pit's edge the
 ## shorter way round, when the straight line crosses it) and the standing
 ## pillars (sliding along the side facing the goal). The result is not
-## clamped; MoveKit clamps every enemy after it acts.
+## clamped; the game's simulation clamps every enemy after it acts.
 static func steer(tuning: Dictionary, pillars: Array, from: Vector2, to: Vector2, step_m: float,
 		around_pit: bool) -> Vector2:
 	var want := to - from
@@ -425,7 +425,7 @@ static func vent_spots(tuning: Dictionary) -> PackedVector2Array:
 	return spots
 
 
-## Ticks until vent `i` erupts when the vent clock (MoveKit `vent_clock`:
+## Ticks until vent `i` erupts when the vent clock (the game's simulation `vent_clock`:
 ## ticks the vents have run so far) reads `clock`; 0 = it erupts on this
 ## clock. The vents take turns: vent i is `i * cycle / count` ticks into the
 ## cycle, and each erupts first a whole cycle after its turn starts.

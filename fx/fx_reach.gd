@@ -10,7 +10,7 @@
 ## outermost of the recipe's EDGES) within `tolerance` of the hit's edge, a
 ## share either way; the lab warns like the budget (FxBudget).
 ## The hit (hit_of) comes from the move's data as the simulation holds it
-## (MoveKit.move_data: the page's values, boons included in a run): its
+## (the game's simulation: the page's values, boons included in a run): its
 ## reach_m (REACH_KEYS: a swing's reach_m, a channel's or slam's radius_m,
 ## the dash's half_width_m, the blink's distance_m) and its arc_deg. A hop's
 ## (the log roll, all-spells ticket 12) has two lobes, one ahead and one
@@ -107,11 +107,11 @@ const LOBE_ARC_KEY := "lobe_arc_deg"
 const CONE_KEY := "front_half_angle_deg"
 
 
-## The hit area of a move from its data (MoveKit.move_data): {reach_m,
+## The hit area of a move from its data (the game's simulation): {reach_m,
 ## arc_deg}; {} for a move with no reach (the time slow; the fusion carries the greatsword's: FxMoves.data_of). A throw's also
 ## carries where its blades fly (all-spells ticket 10): range_m, and
 ## flight_s (its lock: out and back, Moves.LOCK_FRAMES in seconds). The
-## parry's (its kit's [parry] data, MoveKit.parry_data; ticket 11): its
+## parry's (its kit's [parry] data, the game's simulation; ticket 11): its
 ## front cone, arc_deg twice CONE_KEY, with no reach. A hop's (the log
 ## roll; ticket 12): its front lobe's reach as reach_m, its back lobe's as
 ## reach_back_m, each lobe's width as arc_deg.

@@ -110,7 +110,7 @@ static func state(view: Dictionary, look: Dictionary) -> Dictionary:
 
 ## Ticks since this player's cast completed, from its ultimate cooldown
 ## (`cooldown_left`, synced) and the cooldown one cast starts
-## (MoveKit.ultimate_cooldown_frames): 0 on the tick it fires, -1 while
+## (the game's simulation): 0 on the tick it fires, -1 while
 ## charged (or casting).
 static func since_fired(cooldown_left: int, cooldown_frames: int) -> int:
 	if cooldown_left <= 0 or cooldown_frames <= 0:

@@ -7,13 +7,16 @@
 ##   godot --headless --path . res://tests/smoke_test.tscn
 extends Node
 
+## The first check that failed ("" while all pass).
 var _failed := ""
 
 
+## Starts the run once the scene is in the tree.
 func _ready() -> void:
 	_run.call_deferred()
 
 
+## Builds the lab, runs every check, prints PASS or FAIL and quits.
 func _run() -> void:
 	var lab: Node3D = (load("res://vfx_lab/vfx_lab.tscn") as PackedScene).instantiate()
 	add_child(lab)
@@ -72,6 +75,7 @@ func _run() -> void:
 	get_tree().quit(0 if _failed == "" else 1)
 
 
+## Records `what` as the failure when `ok` is false (the first one kept).
 func _check(ok: bool, what: String) -> void:
 	if not ok and _failed == "":
 		_failed = what

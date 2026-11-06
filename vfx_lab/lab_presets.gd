@@ -17,9 +17,7 @@
 ## (show_reach; none for a spell with no hit area). Moving it says so
 ## (reach_moved); the lab draws the effect at that reach (lab_reach.gd) and
 ## the look's ratios under it follow the reach. The page itself is never
-## written: the label names the line to change by hand. A move with two lobes
-## (none of the Mage's) has a second slider under it, its back lobe's (row
-## 1: show_reach(spot, 1); back_reach_moved).
+## written: the label names the line to change by hand.
 ##
 ## Mouse only: its buttons, sliders and pickers never take the keyboard, so
 ## the lab's keys keep working; the name field gives the keys back on Enter.
@@ -37,8 +35,6 @@ signal edited
 ## The reach slider moved to `value` (m): `done` once it is let go (or moved
 ## by a click or the wheel), else mid-drag.
 signal reach_moved(value: float, done: bool)
-## The second reach slider (a two-lobe move's back lobe) moved, the same way.
-signal back_reach_moved(value: float, done: bool)
 
 var recipe := ""
 ## The recipe's own knobs, shown and under Advanced: knob -> [label, min,
@@ -61,14 +57,14 @@ var _advanced: Button
 var _advanced_open := false
 var _editing_low := false
 var _low_button: Button
-## The reach rows (0 the move's reach, 1 a two-lobe move's back lobe): each
-## its box, line, slider, page line shown ({} hidden) and whether dragged.
-const REACH_ROWS := 2
+## The reach rows (one: the move's reach): each its box, line, slider, page
+## line shown ({} hidden) and whether dragged.
+const REACH_ROWS := 1
 var _reach_boxes: Array[VBoxContainer] = []
 var _reach_labels: Array[Label] = []
 var _reach_sliders: Array[HSlider] = []
-var _reach_spots: Array[Dictionary] = [{}, {}]
-var _reach_dragging: Array[bool] = [false, false]
+var _reach_spots: Array[Dictionary] = [{}]
+var _reach_dragging: Array[bool] = [false]
 
 
 ## `recipe`'s panel, on its first saved preset, else `fresh` named
@@ -419,8 +415,8 @@ func _add_reach(box: Control) -> void:
 		_add_reach_row(box, row)
 
 
-## Reach row `row`: its line, its slider (moving it says so: reach_moved,
-## or back_reach_moved for row 1) and a separator under it.
+## Reach row `row`: its line, its slider (moving it says so: reach_moved)
+## and a separator under it.
 func _add_reach_row(box: Control, row: int) -> void:
 	var row_box := VBoxContainer.new()
 	row_box.visible = false
@@ -435,7 +431,7 @@ func _add_reach_row(box: Control, row: int) -> void:
 	slider.step = 0.05
 	slider.focus_mode = Control.FOCUS_NONE
 	slider.tooltip_text = "The move's real reach (its line on the tuning page): the effect is drawn for it"
-	var moved: Signal = reach_moved if row == 0 else back_reach_moved
+	var moved: Signal = reach_moved
 	slider.drag_started.connect(func() -> void: _reach_dragging[row] = true)
 	slider.drag_ended.connect(func(_changed: bool) -> void:
 		_reach_dragging[row] = false
