@@ -22,6 +22,11 @@ extends RefCounted
 const SHADER := preload("res://scenes/player_glow.gdshader")
 ## The glow at full strength, as a share of the dimmest danger glow.
 const CAP := 0.6
+## The game's enemy warnings on the floor (its wind-up, slam, dive and
+## cast tints): the glow stays under the dimmest of them, so a player's ring
+## never reads as a danger.
+const DANGER_TINTS: Array[Color] = [Color(1.0, 0.6, 0.1, 0.35), Color(1.0, 0.1, 0.05, 0.5),
+	Color(1.0, 0.08, 0.08, 0.5), Color(1.0, 0.95, 0.3, 0.45)]
 
 ## The shared materials, by colour (html code), built once.
 static var _materials: Dictionary = {}
@@ -48,9 +53,9 @@ static func material(color: Color, look: Dictionary) -> ShaderMaterial:
 
 ## The dimmest of the enemies' danger glows (brightest channel x opacity).
 static func danger_brightness(look: Dictionary) -> float:
-	var out := LightningLook.telegraph_brightness(look)
-	for tint: Color in [EnemyLooks.COLOR_WINDUP, EnemyLooks.COLOR_SLAM, EnemyLooks.COLOR_BAT_WINDUP,
-			EnemyLooks.COLOR_CIRCLE_CAST]:
+	var telegraph := Color.from_string(String(look.get("telegraph_color", "#ff4a1c")), Color(1.0, 0.29, 0.11))
+	var out := maxf(telegraph.r, maxf(telegraph.g, telegraph.b)) * float(look.get("telegraph_border_opacity", 0.9))
+	for tint: Color in DANGER_TINTS:
 		out = minf(out, maxf(tint.r, maxf(tint.g, tint.b)) * tint.a)
 	return out
 

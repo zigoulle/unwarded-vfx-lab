@@ -30,7 +30,7 @@ extends RefCounted
 const FIRE_SCENE := "res://vfx/knowercoder-3d-fire-and-smoke/Scenes/3d_fire.tscn"
 ## The pack's flame shader recoloured to lava (vent_fire.gdshader).
 const FIRE_SHADER := preload("res://scenes/vent_fire.gdshader")
-const KENNEY_DIR := ImpactLooks.KENNEY_DIR
+const KENNEY_DIR := "res://vfx/kenney-particle-pack/PNG (Transparent)/"
 const POOL_ERUPTIONS := 3
 const POOL_SPLASHES := 5
 const POOL_DUST := 4

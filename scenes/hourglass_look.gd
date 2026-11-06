@@ -96,7 +96,7 @@ static func state(view: Dictionary, look: Dictionary) -> Dictionary:
 	var since := int(view.get("since_fired", -1))
 	if since < 0:
 		return none
-	var shatter_ticks := roundi(float(look.get("hourglass_shatter_s", 0.5)) * CombatSim.TICK_HZ)
+	var shatter_ticks := roundi(float(look.get("hourglass_shatter_s", 0.5)) * MoveKit.TICK_HZ)
 	if since < shatter_ticks:
 		var t := clampf((since + factor) / shatter_ticks, 0.0, 1.0)
 		return {"phase": "shatter", "pour": lerpf(POUR_AT_CAST_END, 1.0, clampf(t / POUR_FINISH_SHARE, 0.0, 1.0)),
@@ -110,7 +110,7 @@ static func state(view: Dictionary, look: Dictionary) -> Dictionary:
 
 ## Ticks since this player's cast completed, from its ultimate cooldown
 ## (`cooldown_left`, synced) and the cooldown one cast starts
-## (CombatSim.ultimate_cooldown_frames): 0 on the tick it fires, -1 while
+## (MoveKit.ultimate_cooldown_frames): 0 on the tick it fires, -1 while
 ## charged (or casting).
 static func since_fired(cooldown_left: int, cooldown_frames: int) -> int:
 	if cooldown_left <= 0 or cooldown_frames <= 0:

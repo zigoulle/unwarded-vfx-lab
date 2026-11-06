@@ -57,9 +57,6 @@ const WALL_STEP_M := 2.1
 const DARK_ABOVE_M := 6.5
 ## The tunnel mouths: height of the opening.
 const TUNNEL_M := 4.4
-## How much deeper into a blocked tunnel its lava face stands than the
-## darkness would (m), so the mouth frames a short tunnel ending in lava.
-const LAVA_FACE_IN_M := 1.2
 ## Fixed seed: the scenery stands in the same places every run.
 const SEED := 26
 ## How strongly the lava lights the rock faces turned toward it
@@ -85,8 +82,6 @@ var _environment: Environment
 ## The lava lights: the full set and the reduced one (apply_graphics).
 var _full_lights: Node3D
 var _reduced_lights: Node3D
-## The dire look (show_danger), over this room and the islands' view in it.
-var _dire: DireLook
 
 
 ## The pooled effects of the ring arena showing now (none when another arena
@@ -256,16 +251,6 @@ func lava_lights() -> Array:
 ## The room's Environment (glow, fog, tone mapping).
 func environment() -> Environment:
 	return _environment
-
-
-## The zone turned dire for the danger clock at `clock` (DireLook; the
-## synced `danger_clock`, the host's tuning), the islands' view included.
-## Within the graphics options apply_graphics set: no glow or light turned on.
-func show_danger(world_tuning: Dictionary, clock: int) -> void:
-	if _dire == null:
-		_dire = DireLook.new(self, _environment)
-	_dire.show(DireLook.at(world_tuning, clock))
-
 
 func _add_lava_light(parent: Node3D, at: Vector3, energy: float, reach: float) -> void:
 	var light := OmniLight3D.new()
@@ -468,17 +453,14 @@ func _add_props(look: Dictionary) -> void:
 			0.5, 0.06)
 		RockMesh.add_block(st, _rng, Vector3(mouth.x + d.x * 0.6, TUNNEL_M + 1.7, mouth.y + d.y * 0.6),
 			Vector3(2.0 * half + 2.2, 1.1, 1.8), yaw + 0.04, 0.42, 0.08)
-		# The entrance's tunnel is the connector cavern (VolcanoZoneView),
-		# open. The exit's is entrance 2, toward the ash forest: while the
-		# forest stands it is the forest's cavern, a second connector (open
-		# too); while its base section is lava the tunnel ends a little way in
-		# at a face of lava (the link is blocked); otherwise darkness.
-		if bridge["name"] == "entrance" or _entrance_2_cavern():
+		# The entrance's tunnel is open (in the game, the connector cavern to
+		# the islands); the exit's ends a little way in, in darkness.
+		if bridge["name"] == "entrance":
 			continue
 		var dark := BoxMesh.new()
 		dark.size = Vector3(2.0 * half + 0.6, TUNNEL_M + 0.4, 3.0)
-		var inside := _mesh(dark, _lava_face(look) if _entrance_2_lava() else _black())
-		var at := d * (wall + 1.9 + (LAVA_FACE_IN_M if _entrance_2_lava() else 0.0))
+		var inside := _mesh(dark, _black())
+		var at := d * (wall + 1.9)
 		inside.position = Vector3(at.x, TUNNEL_M / 2.0 - 0.2, at.y)
 		inside.rotation.y = yaw
 		add_child(inside)
@@ -502,40 +484,6 @@ func _add_props(look: Dictionary) -> void:
 ## lava face) rather than open onto a cavern.
 func tunnel_ends() -> int:
 	return _tunnel_ends
-
-
-## True when the ring's entrance 2 opens onto the forest's cavern
-## (VolcanoZone.tunnels has the forest's tunnel; VolcanoZoneView draws it).
-func _entrance_2_cavern() -> bool:
-	if not (tuning.has("connector") and tuning.has("islands") and tuning.has("base")):
-		return false
-	for tunnel: Dictionary in VolcanoZone.tunnels(tuning):
-		if tunnel["area"] == VolcanoZone.FOREST_TUNNEL:
-			return true
-	return false
-
-
-## True when the ring's entrance 2 (its exit bridge's tunnel) is blocked by
-## lava: the area graph's `entrance_2` link (VolcanoZone.link_way, from the
-## base sections).
-func _entrance_2_lava() -> bool:
-	if not tuning.has("base"):
-		return false
-	for link: Dictionary in VolcanoZone.layout(tuning)["area_graph"]["links"]:
-		if link["crossing"] == "entrance_2":
-			return link["way"] == VolcanoZone.WAY_LAVA
-	return false
-
-
-## The lava face a blocked tunnel ends at: the lava sea beyond, upright.
-func _lava_face(look: Dictionary) -> ShaderMaterial:
-	var face := _material(LAVA_SHADER)
-	face.set_shader_parameter("brightness", 0.9)
-	face.set_shader_parameter("crust_amount", 0.35)
-	face.set_shader_parameter("scale_m", 3.0)
-	face.set_shader_parameter("flow_speed", float(look.get("lava_flow_m_per_s", 0.5)) * 0.4)
-	return face
-
 
 # --- The lavafall ----------------------------------------------------------------
 

@@ -140,7 +140,7 @@ static func laid_disc(ground: Ground, point: Vector3, heading: Vector3, radius: 
 	var cuts := 1
 	if ground != null and ground.curved_at(point):
 		cuts = maxi(1, ceili(radius / SurfaceMesh.STEP_M))
-	var turns := Telegraphs.SEGMENTS
+	var turns := SurfaceMesh.SEGMENTS
 	var grid: Array[PackedVector3Array] = []
 	var uvs: Array[PackedVector2Array] = []
 	for j in cuts + 1:

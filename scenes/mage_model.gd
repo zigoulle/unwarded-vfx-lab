@@ -316,7 +316,7 @@ func show_pose(pose: Dictionary, delta: float) -> void:
 
 ## His kit's move presets ([mage.look]: each move's knob, FxMoves), read on
 ## every kit read (CharacterModel.read_kit).
-func read_kit(kit: CombatSim, _look: Dictionary) -> void:
+func read_kit(kit: MoveKit, _look: Dictionary) -> void:
 	var look := kit.look_data() if kit else {}
 	_tornado_height_m = float(look.get("tornado_height_m", _tornado_height_m))
 	for move: String in _move_fx:

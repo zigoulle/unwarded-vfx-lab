@@ -7,7 +7,7 @@
 ## time-scaled so that marker shows on the move's first active tick (the tick
 ## after its startup frames); the wind-up and the follow-through are scaled
 ## separately, so a longer startup slows only the wind-up. The frame data is
-## read from the CombatSim in effect, so a hot-reloaded tuning retimes at once.
+## read from the MoveKit in effect, so a hot-reloaded tuning retimes at once.
 ## See docs/dev-notes/art-pipeline.md.
 class_name MageClips
 extends RefCounted
@@ -67,7 +67,7 @@ const CLIP_FPS := 60.0
 ## `state`'s trail_lead_frames (feel page; default 0) shown before its first
 ## active tick to the clip's end marker (the move's last frame shown), hit or
 ## miss; "frozen" while hitstop holds the pose (the trail holds with it).
-static func pose(sim: CombatSim, state: Dictionary, markers: Dictionary) -> Dictionary:
+static func pose(sim: MoveKit, state: Dictionary, markers: Dictionary) -> Dictionary:
 	var out := _pose(sim, state, markers)
 	out["frozen"] = int(state.get("hitstop", 0)) > 0
 	out["trail"] = ""
@@ -84,7 +84,7 @@ static func pose(sim: CombatSim, state: Dictionary, markers: Dictionary) -> Dict
 	return out
 
 
-static func _pose(sim: CombatSim, state: Dictionary, markers: Dictionary) -> Dictionary:
+static func _pose(sim: MoveKit, state: Dictionary, markers: Dictionary) -> Dictionary:
 	if state.get("down", false):
 		# Downed (0 HP): the defeat clip plays once and holds, over anything else.
 		return {"clip": "down", "time": -1.0, "rate": 1.0, "spin": 0.0, "lean": 0.0, "once": true,
@@ -118,7 +118,7 @@ static func _pose(sim: CombatSim, state: Dictionary, markers: Dictionary) -> Dic
 ## retime has no hit to place, the pulses being evenly spread. Its recovery
 ## (a Q collapse lands there too) settles through idle, which MageModel
 ## crossfades into. No trail, no spin.
-static func _channel(sim: CombatSim, state: Dictionary, move: String, markers: Dictionary) -> Dictionary:
+static func _channel(sim: MoveKit, state: Dictionary, move: String, markers: Dictionary) -> Dictionary:
 	var frame := int(state["move_frame"])
 	if sim.move_phase(move, frame) != "channel":
 		return {"clip": "idle", "time": -1.0, "rate": 1.0, "spin": 0.0, "lean": 0.0, "yaw_deg": 0.0}
@@ -152,7 +152,7 @@ static func _clip_yaw(marks: Dictionary) -> float:
 ## Held by a hit (flinch or stagger; the caller passes it only while it holds
 ## the player): its clip runs start to end over the hit's whole length
 ## (`player.flinch_frames` or `stagger_frames`), whatever the move was.
-static func _held(sim: CombatSim, state: Dictionary, held: String, marks: Dictionary) -> Dictionary:
+static func _held(sim: MoveKit, state: Dictionary, held: String, marks: Dictionary) -> Dictionary:
 	var total := float(sim.player_data()["%s_frames" % held])
 	var elapsed := maxf(0.0, total - float(state["hit_frames"]) - 1.0 + float(state["tick_factor"]))
 	var time := retime(elapsed, total, total, marks["start"], marks["end"], marks["end"])
@@ -218,16 +218,16 @@ static func retime(elapsed: float, anchor: float, total: float, start: float, hi
 ## into the move this state shows), hit_s (its hit marker: the clip is
 ## retimed to show it on the move's first active tick)}; {} outside a swing.
 ## A channel's (the tornado) too: its hit where its looping clip shows its
-## hit marker (FxMoves.hit_s), and its `channel` {on (CombatSim
+## hit marker (FxMoves.hit_s), and its `channel` {on (MoveKit
 ## is_channelling: not in its recovery), radius_m (his own kit's, his boons'
 ## wider one too), length_s (when it ends if nothing breaks it)}.
 ## The blink (ticket 05) casts too: it hits nothing, so its hit marker is
-## its end, his arrival (CombatSim.frames_before_active).
+## its end, his arrival (MoveKit.frames_before_active).
 ## His ultimate's (the time slow) too: its hit the cast's completing tick.
 ## Each carries its `hit` area (FxReach.hit_of of the move's data, his boons'
 ## wider reach too): the preset's ground footprint is ratios of its reach.
 ## Looks only.
-static func move_cast(sim: CombatSim, state: Dictionary, cast_tick: int, actor: int) -> Dictionary:
+static func move_cast(sim: MoveKit, state: Dictionary, cast_tick: int, actor: int) -> Dictionary:
 	var move: String = state.get("move", "")
 	if move == "" or not sim.has_move(move):
 		return {}

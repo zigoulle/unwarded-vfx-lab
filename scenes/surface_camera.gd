@@ -1,7 +1,7 @@
 ## The surface-riding camera (the gravity spike, docs/zones/lava-ball-gravity-
 ## system.md): today's camera (distance_m behind, height_m above the player,
 ## looking at him, turned round him by the mouse's yaw), set in the frame of
-## the ground under him (SurfaceGravity.frame: his up, and the heading
+## the ground under him (frame: his up, and the heading
 ## carried along his path) instead of the world's. On flat ground (up +Y,
 ## heading -Z) it is exactly today's camera. Node-free.
 class_name SurfaceCamera
@@ -10,9 +10,9 @@ extends RefCounted
 
 ## The pivot's frame: the ground's frame at the player (`up`, heading
 ## `forward`) turned `yaw_deg` round his up (the mouse; yaw 0 looks along
-## the heading, 90 along its left, as CombatSim.camera_forward).
+## the heading, 90 along its left, as MoveKit.camera_forward).
 static func pivot_basis(up: Vector3, forward: Vector3, yaw_deg: float) -> Basis:
-	return Basis(up, deg_to_rad(yaw_deg)) * SurfaceGravity.frame(up, forward)
+	return Basis(up, deg_to_rad(yaw_deg)) * frame(up, forward)
 
 
 ## The camera's world transform: `distance_m` behind and `height_m` above
@@ -105,3 +105,10 @@ static func eased_share(current: float, wanted: float, delta: float, release_s: 
 	if wanted <= current or release_s <= 0.0:
 		return wanted
 	return minf(wanted, current + delta / release_s)
+
+
+## The surface frame at a point whose up is `up`, heading `forward`: x is
+## right, y is up, z is back (-forward), like a Godot node facing -Z.
+static func frame(up: Vector3, forward: Vector3) -> Basis:
+	var ahead := (forward - up * forward.dot(up)).normalized()
+	return Basis(ahead.cross(up), up, -ahead)

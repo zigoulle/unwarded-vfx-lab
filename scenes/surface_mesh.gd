@@ -14,6 +14,9 @@
 class_name SurfaceMesh
 extends RefCounted
 
+## How many segments a full ring is drawn with (the game's floor warnings' too).
+const SEGMENTS := 64
+
 ## The longest radial edge on a curved ground (m): a 0.5 m chord of the
 ## 29 m ball sags about a millimetre.
 const STEP_M := 0.5
@@ -77,12 +80,12 @@ static func snapped_radius(radius: float, step_m: float) -> float:
 
 
 ## A ring `inner` to `outer` m from `centre` (a disc when `inner` is 0),
-## Telegraphs.SEGMENTS round.
+## SEGMENTS round.
 static func ring(ground: Ground, centre: Vector3, heading: Vector3, inner: float, outer: float,
 		lift: float = 0.0) -> ArrayMesh:
 	var lay := layer(ground, centre, heading, lift)
 	var radii := _radii(ground, centre, inner, outer)
-	var turns := Telegraphs.SEGMENTS
+	var turns := SEGMENTS
 	var grid: Array[PackedVector3Array] = []
 	for r in radii:
 		var row := PackedVector3Array()
@@ -105,7 +108,7 @@ static func sector(ground: Ground, centre: Vector3, heading: Vector3, inner: flo
 		angle_deg: float, width: float = 0.0, lift: float = 0.0) -> ArrayMesh:
 	var lay := layer(ground, centre, heading, lift)
 	var half := deg_to_rad(angle_deg) / 2.0
-	var steps := maxi(4, ceili(Telegraphs.SEGMENTS * angle_deg / 360.0))
+	var steps := maxi(4, ceili(SEGMENTS * angle_deg / 360.0))
 	var at := func(a: float, r: float) -> Vector3: return Vector3(sin(a) * r, 0.0, -cos(a) * r)
 	var bands: Array = [[inner, outer]] if width <= 0.0 else [[inner, minf(outer, inner + width)],
 		[maxf(inner, outer - width), outer]]
@@ -144,7 +147,7 @@ static func strip(ground: Ground, start: Vector3, heading: Vector3, length: floa
 	var lay := layer(ground, start, heading, lift)
 	var curved := ground.curved_at(start)
 	var vertices := PackedVector3Array()
-	for r: Array in Telegraphs.strip_rects(length, width, edge):
+	for r: Array in strip_rects(length, width, edge):
 		var nx := 1 if not curved else maxi(1, ceili((float(r[1]) - float(r[0])) / STEP_M))
 		var nz := 1 if not curved else maxi(1, ceili((float(r[3]) - float(r[2])) / STEP_M))
 		for i in nx:
@@ -266,3 +269,15 @@ static func _mesh(vertices: PackedVector3Array) -> ArrayMesh:
 	var mesh := ArrayMesh.new()
 	mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
 	return mesh
+
+
+## The flat rectangles (each [x0, x1, z0, z1]) of a strip from the origin
+## along -Z, `length` long and `width` across: the whole of it when `edge`
+## is 0, else its edge, `edge` wide inward (both sides, then both ends).
+static func strip_rects(length: float, width: float, edge: float) -> Array:
+	var half := width / 2.0
+	if edge <= 0.0:
+		return [[-half, half, -length, 0.0]]
+	var end := minf(edge, length / 2.0)
+	return [[-half, -half + edge, -length, 0.0], [half - edge, half, -length, 0.0],
+		[-half + edge, half - edge, -end, 0.0], [-half + edge, half - edge, -length, -length + end]]

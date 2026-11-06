@@ -4,7 +4,7 @@
 ## knobs, in FxPreset.knobs), and a picker per colour, then the recipe's
 ## advanced knobs under an Advanced button (ticket 05: hidden until opened,
 ## so a spell shows 5-15 knobs), the saved presets by name, and Save,
-## Duplicate, Rename and Commit presets. The effect reads `preset` every frame
+## Duplicate, Rename and Copy. The effect reads `preset` every frame
 ## it draws, so a slider moved shows at once, paused too.
 ## Ticket 08: the shared advanced knobs (the bloom) sit under Advanced too;
 ## "Editing: Max" (pressed: "Editing: Low") switches the effect to the
@@ -15,11 +15,11 @@
 ## Ticket 16: at the top, the move's reach (the spec's "drawn area matches
 ## the hit area"): a slider on the move's real reach from the tuning page
 ## (show_reach; none for a spell with no hit area). Moving it says so
-## (reach_moved); the lab writes the page as the tuning screen does
-## (lab_reach.gd), once on release while dragging, and the look's ratios
-## under it follow the reach. A move with two lobes (the log roll, ticket
-## 12) has a second slider under it, its back lobe's (row 1: show_reach(spot,
-## 1); back_reach_moved).
+## (reach_moved); the lab draws the effect at that reach (lab_reach.gd) and
+## the look's ratios under it follow the reach. The page itself is never
+## written: the label names the line to change by hand. A move with two lobes
+## (none of the Mage's) has a second slider under it, its back lobe's (row
+## 1: show_reach(spot, 1); back_reach_moved).
 ##
 ## Mouse only: its buttons, sliders and pickers never take the keyboard, so
 ## the lab's keys keep working; the name field gives the keys back on Enter.
@@ -28,11 +28,9 @@
 ##   Duplicate       saves a copy under the field's name (or "<name> copy")
 ##                   and switches to it
 ##   Rename          renames the saved preset to the field's name
-##   Commit presets  asks (listing them), then on a second press commits the
-##                   presets folder and nothing else (PresetCommit)
+##   Copy            puts the preset's .tres file text on the clipboard (to
+##                   paste into a file of your own, or share)
 extends PanelContainer
-
-const Commit := preload("res://vfx_lab/preset_commit.gd")
 
 ## The edited preset changed (a knob, or another preset picked).
 signal edited
@@ -51,8 +49,6 @@ var advanced_knobs := {}
 ## The preset tuned now; its file is `preset_name` once saved.
 var preset: FxPreset
 var preset_name := ""
-## Git (Callable(args) -> {code, output}): the real one, a fake in the tests.
-var git_runner: Callable = TuningCommit.git_runner
 
 var _sliders := {}
 var _values := {}
@@ -60,8 +56,6 @@ var _pickers := {}
 var _list: OptionButton
 var _name: LineEdit
 var _status: Label
-var _commit: Button
-var _commit_asked := false
 var _syncing := false
 var _advanced: Button
 var _advanced_open := false
@@ -113,7 +107,7 @@ func names() -> Array:
 	return Array(FxPresets.names(recipe))
 
 
-## The panel's last word (saved, refused, the commit's list or hash).
+## The panel's last word (saved, refused, copied).
 func status() -> String:
 	return _status.text
 
@@ -258,34 +252,24 @@ func pick_preset(pick_name: String) -> String:
 	return ""
 
 
-## The first press lists what would be committed; the second commits.
-func commit_presets() -> void:
-	var folders := FxPresets.folders().filter(func(each: String) -> bool: return DirAccess.dir_exists_absolute(each)).map(
-		func(each: String) -> String: return ProjectSettings.globalize_path(each))
-	var plan: Dictionary = Commit.plan_all(folders, git_runner)
-	if plan["error"] != "":
-		_ask_commit(false)
-		say("%s\nTo commit by hand:\n%s" % [plan["error"], plan["command"]])
-		return
-	var lines: PackedStringArray = []
-	for item: Dictionary in plan["presets"]:
-		lines.append(Commit.line(item))
-	if not _commit_asked:
-		_ask_commit(true)
-		say("Press Commit again to commit:\n" + "\n".join(lines))
-		return
-	_ask_commit(false)
-	var done: Dictionary = Commit.commit(plan, commit_message_path(), git_runner)
-	if done["error"] != "":
-		say("%s\nTo commit by hand:\n%s" % [done["error"], done["command"]])
-		return
-	print("[vfx lab] committed presets %s" % done["hash"])
-	say("Committed %s:\n%s" % [done["hash"], "\n".join(lines)])
+## The preset as its .tres file's text (as Save writes it).
+func preset_text() -> String:
+	var path := "user://copied_preset.tres"
+	if ResourceSaver.save(preset.duplicate(true) as FxPreset, path) != OK:
+		return ""
+	var text := FileAccess.get_file_as_string(path)
+	DirAccess.remove_absolute(path)
+	return text
 
 
-## Where Commit presets writes its message.
-func commit_message_path() -> String:
-	return OS.get_user_data_dir().path_join("preset-commit-message.txt")
+## Puts the preset's .tres text on the clipboard.
+func copy_preset() -> void:
+	var text := preset_text()
+	if text == "":
+		_refused("the preset could not be written out.")
+		return
+	DisplayServer.clipboard_set(text)
+	say("Copied %s as .tres text: paste it into fx/presets/%s/<name>.tres" % [preset_name, recipe])
 
 
 # --- Inside --------------------------------------------------------------------
@@ -295,7 +279,6 @@ func commit_message_path() -> String:
 func _use(next: FxPreset, next_name: String) -> void:
 	preset = next
 	preset_name = next_name
-	_ask_commit(false)
 	_refresh_list()
 	_show_values()
 	edited.emit()
@@ -305,12 +288,6 @@ func _use(next: FxPreset, next_name: String) -> void:
 func _refused(error: String) -> String:
 	say("Not done: " + error)
 	return error
-
-
-## Commit presets waits for its second press (`asked`) or not.
-func _ask_commit(asked: bool) -> void:
-	_commit_asked = asked
-	_commit.text = "Commit presets? (press again)" if asked else "Commit presets"
 
 
 ## The drop-down of saved names and the name field, on the preset edited.
@@ -380,17 +357,13 @@ func _build() -> void:
 			["Duplicate", func() -> void:
 				var copy := _typed_name()
 				duplicate_preset(copy if copy != preset_name and copy != "" else preset_name + " copy")],
-			["Rename", func() -> void: rename_preset(_typed_name())]]:
+			["Rename", func() -> void: rename_preset(_typed_name())],
+			["Copy", copy_preset]]:
 		var button := Button.new()
 		button.text = pair[0]
 		button.focus_mode = Control.FOCUS_NONE
 		button.pressed.connect(pair[1])
 		row.add_child(button)
-	_commit = Button.new()
-	_commit.focus_mode = Control.FOCUS_NONE
-	_commit.tooltip_text = "Commits the presets folders (game/fx/presets, and a character's own) and nothing else"
-	_commit.pressed.connect(commit_presets)
-	box.add_child(_commit)
 	var low_row := HBoxContainer.new()
 	box.add_child(low_row)
 	_low_button = Button.new()
@@ -437,7 +410,6 @@ func _build() -> void:
 	_status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_status.custom_minimum_size = Vector2(280, 0)
 	box.add_child(_status)
-	_ask_commit(false)
 
 
 ## The reach rows' lines and sliders at the top of `box`, hidden until
@@ -462,7 +434,7 @@ func _add_reach_row(box: Control, row: int) -> void:
 	var slider := HSlider.new()
 	slider.step = 0.05
 	slider.focus_mode = Control.FOCUS_NONE
-	slider.tooltip_text = "The move's real reach on the live tuning page, as the tuning screen writes it"
+	slider.tooltip_text = "The move's real reach (its line on the tuning page): the effect is drawn for it"
 	var moved: Signal = reach_moved if row == 0 else back_reach_moved
 	slider.drag_started.connect(func() -> void: _reach_dragging[row] = true)
 	slider.drag_ended.connect(func(_changed: bool) -> void:
@@ -482,7 +454,7 @@ func _add_reach_row(box: Control, row: int) -> void:
 func _show_reach_label(value: float, row: int = 0) -> void:
 	var spot: Dictionary = _reach_spots[row]
 	var unit := "deg" if str(spot["key"]).ends_with("_deg") else ("x" if str(spot["key"]).ends_with("_mult") else "m")
-	_reach_labels[row].text = "Reach  %s %.2f %s  (%s.cfg [%s], live)" % [spot["key"], value, unit,
+	_reach_labels[row].text = "Reach  %s %.2f %s  (%s.cfg [%s]; not saved)" % [spot["key"], value, unit,
 		spot["page"], spot["section"]]
 
 

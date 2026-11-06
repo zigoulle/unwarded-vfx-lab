@@ -10,7 +10,7 @@
 ## outermost of the recipe's EDGES) within `tolerance` of the hit's edge, a
 ## share either way; the lab warns like the budget (FxBudget).
 ## The hit (hit_of) comes from the move's data as the simulation holds it
-## (CombatSim.move_data: the page's values, boons included in a run): its
+## (MoveKit.move_data: the page's values, boons included in a run): its
 ## reach_m (REACH_KEYS: a swing's reach_m, a channel's or slam's radius_m,
 ## the dash's half_width_m, the blink's distance_m) and its arc_deg. A hop's
 ## (the log roll, all-spells ticket 12) has two lobes, one ahead and one
@@ -42,45 +42,7 @@ const TIES := {
 	"whirlwind": {"radius_x": ["radius_m", "reach"], "burst_x": ["burst_m", "reach"],
 		"dust_x": ["dust_m", "reach"]},
 	"sand_slash": {"radius_x": ["radius_m", "reach"], "arc_x": ["arc_deg", "arc"]},
-	"light_strike": {"radius_x": ["radius_m", "reach"], "hit_ahead_x": ["hit_ahead_m", "reach"],
-		"arc_x": ["arc_deg", "arc"]},
-	"heavy_spin": {"radius_x": ["radius_m", "reach"], "burst_x": ["burst_m", "reach"], "arc_x": ["arc_deg", "arc"]},
-	"lightning_line": {"spread_x": ["spread_m", "reach"], "marks_x": ["marks_m", "reach"]},
-	"lightning_ring": {"radius_x": ["radius_m", "reach"], "start_x": ["start_m", "reach"],
-		"cracks_x": ["cracks_m", "reach"]},
-	"blade_throw": {"whirl_x": ["whirl_m", "reach"]},
-	"parry": {"fan_x": ["fan_deg", "arc"]},
-	"roll": {"front_x": ["front_m", "reach"], "back_x": ["back_m", "back"], "arc_x": ["arc_deg", "arc"]},
 	"blink": {"burst_x": ["burst_m", "reach"], "puff_x": ["puff_m", "reach"]},
-	# The super spawner's swirl: a ratio of its rock ring's radius (it hits
-	# nothing, so no EDGES).
-	"spawner_swirl": {"radius_x": ["radius_m", "reach"]},
-	"fusion": {"arcs_x": ["arcs_m", "reach"], "fan_x": ["fan_deg", "arc"], "burst_x": ["burst_m", "reach"]},
-	# The fire casters' (enemy-vfx ticket 01; FxMoves.ENEMY): the fireball's
-	# ball and blast ratios of its projectile_radius_m, the flame strike's
-	# ring, rim, inner flames and scorch of its circle_radius_m.
-	"fireball": {"radius_x": ["radius_m", "reach"], "blast_x": ["blast_m", "reach"]},
-	"flame_strike": {"ring_x": ["ring_m", "reach"], "rim_x": ["rim_m", "reach"], "inner_x": ["inner_m", "reach"],
-		"scorch_x": ["scorch_m", "reach"]},
-	# The Fire bomb boon's explosion (playtest 2026-10-25 #3; FxMoves.BOON):
-	# its fireball, shockwave and scorch ratios of explosion_radius_m.
-	"fire_bomb": {"blast_x": ["blast_m", "reach"], "ring_x": ["ring_m", "reach"], "scorch_x": ["scorch_m", "reach"]},
-	# The Throwing knives boon's knife (the light vs heavy pass, 2026-10-28;
-	# FxMoves.BOON): its impact ring a ratio of knife_radius_m.
-	"throwing_knife": {"burst_x": ["burst_m", "reach"]},
-	# The volcano boots' fire puddle (polish step 9, P-O 2026-10-29;
-	# FxMoves.GEAR): its pool and its flames' spread ratios of
-	# [volcano_boots] trail_radius_m.
-	"fire_puddle": {"puddle_x": ["puddle_m", "reach"], "flames_x": ["flames_m", "reach"]},
-	# The volcano full set's heat aura (polish step 10, P-O 2026-10-29):
-	# its shimmer's bands and its embers' spread ratios of [volcano_set]
-	# aura_radius_m.
-	"heat_aura": {"radius_x": ["radius_m", "reach"], "inner_x": ["inner_m", "reach"],
-		"embers_x": ["embers_m", "reach"]},
-	# The core mother's flame jet (her X's beams; the polish pass, P-O
-	# 2026-10-29): its ground line and its flames ratios of half the beam's
-	# width (x_beam_width_m / 2).
-	"flame_jet": {"line_x": ["line_m", "reach"], "root_x": ["root_w_m", "reach"], "flame_x": ["flame_w_m", "reach"]},
 }
 ## Per recipe with a hit area, the metres knobs drawn on (or over) the
 ## ground round the hit: its drawn edge is the outermost (edge_m). The
@@ -91,38 +53,11 @@ const EDGES := {
 	"ground_shake": ["burst_m", "cracks_m", "dust_m"],
 	"whirlwind": ["radius_m", "burst_m", "dust_m"],
 	"sand_slash": ["radius_m"],
-	"light_strike": ["radius_m", "hit_ahead_m"],
-	"heavy_spin": ["radius_m", "burst_m"],
-	"lightning_line": ["spread_m", "marks_m"],
-	"lightning_ring": ["radius_m", "cracks_m"],
-	"blade_throw": ["whirl_m"],
-	"parry": ["fan_deg"],
-	"roll": ["front_m"],
-	"fusion": ["arcs_m", "burst_m"],
-	# The ball itself is its hit (the blast over it is above the ground);
-	# the strike's ring, rim and scorch lie on it.
-	"fireball": ["radius_m"],
-	"flame_strike": ["ring_m", "rim_m", "scorch_m"],
-	# The fireball is a dome over the kill; the shockwave and scorch lie on
-	# the ground.
-	"fire_bomb": ["ring_m", "scorch_m"],
-	# The knife flies the simulation's own path; the ring round the enemy it
-	# hits lies on the ground: as wide as the knife hits.
-	"throwing_knife": ["burst_m"],
-	# The pool is the patch's burn area on the floor.
-	"fire_puddle": ["puddle_m"],
-	# Nothing lies on the floor (no circle: P-O 2026-10-29); its outer band
-	# and its embers stand round the wearer out to the aura's edge.
-	"heat_aura": ["radius_m", "embers_m"],
-	# The jet's scorched glowing line marks the hit's true width; its flames
-	# stay inside it.
-	"flame_jet": ["line_m", "root_w_m", "flame_w_m"],
 }
 ## Per two-lobe recipe (the log roll's), the metres knobs drawn round its
 ## back lobe: checked against the hit's reach_back_m as EDGES are against
 ## its reach_m.
 const BACK_EDGES := {
-	"roll": ["back_m"],
 }
 ## The recipes whose edge is an angle, not a ground edge (all-spells ticket
 ## 11: the parry's forks fan across his front cone, which has no reach: any
@@ -136,23 +71,7 @@ const REFERENCE := {
 	"ground_shake": {"reach_m": 4.4, "arc_deg": 360.0},
 	"whirlwind": {"reach_m": 2.8, "arc_deg": 360.0},
 	"sand_slash": {"reach_m": 2.4, "arc_deg": 150.0},
-	"light_strike": {"reach_m": 2.2, "arc_deg": 60.0},
-	"heavy_spin": {"reach_m": 2.2, "arc_deg": 360.0},
-	"lightning_line": {"reach_m": 0.9, "arc_deg": 360.0},
-	"lightning_ring": {"reach_m": 4.0, "arc_deg": 360.0},
-	"blade_throw": {"reach_m": 1.0, "arc_deg": 360.0},
-	"parry": {"reach_m": 0.0, "arc_deg": 120.0},
-	"roll": {"reach_m": 2.6, "reach_back_m": 2.6, "arc_deg": 90.0},
 	"blink": {"reach_m": 7.0, "arc_deg": 360.0},
-	"spawner_swirl": {"reach_m": 2.5, "arc_deg": 360.0},
-	"fusion": {"reach_m": 3.3, "arc_deg": 180.0},
-	"fireball": {"reach_m": 0.4, "arc_deg": 360.0},
-	"flame_strike": {"reach_m": 1.5, "arc_deg": 360.0},
-	"fire_bomb": {"reach_m": 3.0, "arc_deg": 360.0},
-	"throwing_knife": {"reach_m": 0.6, "arc_deg": 360.0},
-	"fire_puddle": {"reach_m": 0.9, "arc_deg": 360.0, "life_s": 2.5},
-	"heat_aura": {"reach_m": 2.5, "arc_deg": 360.0},
-	"flame_jet": {"reach_m": 0.6, "arc_deg": 360.0},
 }
 ## The move data's key holding its reach, first found first (the throw's:
 ## the blades' hit body round them, the key a reach boon scales).
@@ -188,11 +107,11 @@ const LOBE_ARC_KEY := "lobe_arc_deg"
 const CONE_KEY := "front_half_angle_deg"
 
 
-## The hit area of a move from its data (CombatSim.move_data): {reach_m,
+## The hit area of a move from its data (MoveKit.move_data): {reach_m,
 ## arc_deg}; {} for a move with no reach (the time slow; the fusion carries the greatsword's: FxMoves.data_of). A throw's also
 ## carries where its blades fly (all-spells ticket 10): range_m, and
 ## flight_s (its lock: out and back, Moves.LOCK_FRAMES in seconds). The
-## parry's (its kit's [parry] data, CombatSim.parry_data; ticket 11): its
+## parry's (its kit's [parry] data, MoveKit.parry_data; ticket 11): its
 ## front cone, arc_deg twice CONE_KEY, with no reach. A hop's (the log
 ## roll; ticket 12): its front lobe's reach as reach_m, its back lobe's as
 ## reach_back_m, each lobe's width as arc_deg.
@@ -207,7 +126,7 @@ static func hit_of(data: Dictionary) -> Dictionary:
 			var out := {"reach_m": float(data[key]), "arc_deg": float(data.get("arc_deg", FULL_ARC))}
 			if Moves.is_throw(data):
 				out["range_m"] = float(data["range_m"])
-				out["flight_s"] = float(Moves.phase_frames(data, Moves.LOCK_FRAMES)) / CombatSim.TICK_HZ
+				out["flight_s"] = float(Moves.phase_frames(data, Moves.LOCK_FRAMES)) / MoveKit.TICK_HZ
 			elif data.has("range_m") and Moves.fires_shots(data):
 				out["range_m"] = float(data["range_m"])
 			for carried: String in CARRIED_KEYS:
@@ -221,23 +140,23 @@ static func hit_of(data: Dictionary) -> Dictionary:
 
 ## Whether `recipe`'s move has a hit area its ground edge is checked against.
 static func has_hit(recipe: String) -> bool:
-	return EDGES.has(recipe) or CharacterPacks.fx_recipe(recipe).has("edges")
+	return EDGES.has(recipe)
 
 
 ## `recipe`'s ratio knobs (TIES' row, or its pack's: CharacterPack.fx_recipes);
 ## {} with none.
 static func ties_of(recipe: String) -> Dictionary:
-	return TIES[recipe] if TIES.has(recipe) else CharacterPacks.fx_recipe(recipe).get("ties", {})
+	return TIES.get(recipe, {})
 
 
 ## `recipe`'s ground-edge knobs (EDGES' row, or its pack's); [] with none.
 static func edges_of(recipe: String) -> Array:
-	return EDGES[recipe] if EDGES.has(recipe) else CharacterPacks.fx_recipe(recipe).get("edges", [])
+	return EDGES.get(recipe, [])
 
 
 ## The reach `recipe` is drawn at alone (REFERENCE's row, or its pack's).
 static func reference_of(recipe: String) -> Dictionary:
-	return REFERENCE[recipe] if REFERENCE.has(recipe) else CharacterPacks.fx_recipe(recipe).get("reference", {})
+	return REFERENCE.get(recipe, {})
 
 
 ## `recipe`'s sensible default preset (its script's default_preset).
@@ -259,10 +178,6 @@ static func _default_knobs_of(recipe: String) -> Variant:
 ## The script drawing `recipe` (null: none; the lab's placeholder is its own).
 static func script_of(recipe: String) -> GDScript:
 	match recipe:
-		LightningLine.RECIPE:
-			return LightningLine
-		LightningRing.RECIPE:
-			return LightningRing
 		FxTornado.RECIPE:
 			return FxTornado
 		FxGroundShake.RECIPE:
@@ -273,40 +188,9 @@ static func script_of(recipe: String) -> GDScript:
 			return FxWhirlwind
 		FxBlink.RECIPE:
 			return FxBlink
-		FxLightStrike.RECIPE:
-			return FxLightStrike
-		FxHeavySpin.RECIPE:
-			return FxHeavySpin
-		FxBladeThrow.RECIPE:
-			return FxBladeThrow
-		FxParry.RECIPE:
-			return FxParry
-		FxRoll.RECIPE:
-			return FxRoll
 		FxTimeSlow.RECIPE:
 			return FxTimeSlow
-		FxSpawnerSwirl.RECIPE:
-			return FxSpawnerSwirl
-		FxFusion.RECIPE:
-			return FxFusion
-		FxFireball.RECIPE:
-			return FxFireball
-		FxFlameStrike.RECIPE:
-			return FxFlameStrike
-		FxFireBomb.RECIPE:
-			return FxFireBomb
-		FxThrowingKnife.RECIPE:
-			return FxThrowingKnife
-		FxTigerFlames.RECIPE:
-			return FxTigerFlames
-		FxFirePuddle.RECIPE:
-			return FxFirePuddle
-		FxHeatAura.RECIPE:
-			return FxHeatAura
-		FxFlameJet.RECIPE:
-			return FxFlameJet
-	# A recipe of no shared table: its pack's (CharacterPack.fx_recipes).
-	return CharacterPacks.fx_recipe(recipe).get("script")
+	return null
 
 
 ## `look`'s knobs in metres: any it lacks at its recipe's default's, each
@@ -440,7 +324,7 @@ static func check(look: FxPreset, hit: Dictionary) -> Dictionary:
 ## tip and the gap at its inner end) checked beside its edge: the worst of them, the
 ## knob named as `lobe`. Times its size, as an edge is.
 static func _spans_checked(out: Dictionary, sized: FxPreset, hit: Dictionary) -> Dictionary:
-	var spans: Dictionary = CharacterPacks.fx_recipe(sized.recipe).get("spans", {})
+	var spans: Dictionary = {}
 	var worst := out
 	for knob: String in spans:
 		var span := _checked(float(sized.knobs.get(knob, 0.0)) * sized.size, float(hit.get(spans[knob], 0.0)), false)

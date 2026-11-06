@@ -5,20 +5,24 @@
 ## the exit, entrance 2, toward the ash forest: VolcanoZone.ring_exit_deg,
 ## -Z without one), rock pillars standing on the ring, lava vents, the
 ## lavafall's two burning outer lanes, and the spots enemies climb out of
-## the lava from. Ground points are Vector2(x, z), as in CombatSim. Pure
+## the lava from. Ground points are Vector2(x, z), as in MoveKit. Pure
 ## static functions of the tuning (the whole set of values by section) and
 ## the pillars' state, so rollback replays agree.
 ##
 ## Angles (deg) run from the entrance (+Z) toward +X: a point at angle a,
 ## r metres out, is Vector2(sin a, cos a) * r.
 ##
-## Pillars' state (CombatSim `pillars`): one {hits, down} per pillar spot:
+## Pillars' state (MoveKit `pillars`): one {hits, down} per pillar spot:
 ## hits = golem slams taken since it last stood up; down = ticks until it
 ## stands again (0 = standing). While down it is a stump anyone walks over;
 ## over its last rise_frames ticks the rising telegraph shows. A missing
 ## entry counts as standing.
 class_name RingArena
 extends RefCounted
+
+## Where the exit bridge (entrance 2) leaves the ring (deg from +Z toward
+## +X): straight back, as the game draws it with no zone round the ring.
+const EXIT_DEG := 180.0
 
 ## How far a body's centre is kept from a standing pillar's side (m): about
 ## a character's radius.
@@ -60,13 +64,13 @@ const KEYS := {
 		"cycle_frames": ["whole number", 1, 36000],
 		"telegraph_frames": ["whole number", 0, 36000],
 		"damage": ["whole number", 0, 100000],
-		"hit_tier": ["choice", Enemies.TIERS],
+		"hit_tier": ["choice", Moves.HIT_TIERS],
 	},
 	"lavafall": {
 		"lane_width_m": ["number", 0.2, 10.0],
 		"burn_damage": ["whole number", 0, 100000],
 		"burn_interval_frames": ["whole number", 1, 3600],
-		"hit_tier": ["choice", Enemies.TIERS],
+		"hit_tier": ["choice", Moves.HIT_TIERS],
 	},
 	"lava_spawn": {
 		"swell_s": ["number", 0.0, 120.0],
@@ -105,18 +109,8 @@ static func at_angle(angle_deg: float, r: float) -> Vector2:
 ## `exit_bridge_width_m` wide. Both reach the cave wall, where the zone's
 ## tunnels go on.
 ##
-## In the volcano (a tuning with its layout rows) the list is worked out once
-## per layout and kept with it (VolcanoZone.layout_kept; read only): every
-## floor question asks it (perf pass 16).
 static func bridges(tuning: Dictionary) -> Array:
-	if not (tuning.has("connector") and tuning.has("islands") and tuning.has("base")):
-		return _bridges(tuning)
-	var kept := VolcanoZone.layout_kept(tuning)
-	var known: Variant = kept.get("ring_bridges")
-	if known == null:
-		known = VolcanoZone._read_only(_bridges(tuning))
-		kept["ring_bridges"] = known
-	return known
+	return _bridges(tuning)
 
 
 static func _bridges(tuning: Dictionary) -> Array:
@@ -125,7 +119,7 @@ static func _bridges(tuning: Dictionary) -> Array:
 	return [
 		{"name": "entrance", "dir": Vector2(0, 1), "from_m": from, "to_m": to,
 			"half_width_m": 2.0 * float(tuning["lavafall"]["lane_width_m"])},
-		{"name": "exit", "dir": at_angle(VolcanoZone.ring_exit_deg(tuning), 1.0), "from_m": from, "to_m": to,
+		{"name": "exit", "dir": at_angle(EXIT_DEG, 1.0), "from_m": from, "to_m": to,
 			"half_width_m": float(tuning["ring"]["exit_bridge_width_m"]) / 2.0},
 	]
 
@@ -261,11 +255,11 @@ static func fresh_pillars(tuning: Dictionary) -> Array:
 ## Ticks a broken pillar lies before it stands again (`respawn_s`), and the
 ## last ticks of that during which its rising telegraph shows.
 static func respawn_frames(tuning: Dictionary) -> int:
-	return maxi(1, roundi(float(tuning["pillar"]["respawn_s"]) * CombatSim.TICK_HZ))
+	return maxi(1, roundi(float(tuning["pillar"]["respawn_s"]) * MoveKit.TICK_HZ))
 
 
 static func rise_frames(tuning: Dictionary) -> int:
-	return roundi(float(tuning["pillar"]["rise_telegraph_s"]) * CombatSim.TICK_HZ)
+	return roundi(float(tuning["pillar"]["rise_telegraph_s"]) * MoveKit.TICK_HZ)
 
 
 static func is_standing(pillars: Array, i: int) -> bool:
@@ -379,7 +373,7 @@ static func _segment_distance(a: Vector2, b: Vector2, c: Vector2) -> float:
 ## in the way: the pit (`around_pit`, walkers: along the pit's edge the
 ## shorter way round, when the straight line crosses it) and the standing
 ## pillars (sliding along the side facing the goal). The result is not
-## clamped; CombatSim clamps every enemy after it acts.
+## clamped; MoveKit clamps every enemy after it acts.
 static func steer(tuning: Dictionary, pillars: Array, from: Vector2, to: Vector2, step_m: float,
 		around_pit: bool) -> Vector2:
 	var want := to - from
@@ -431,7 +425,7 @@ static func vent_spots(tuning: Dictionary) -> PackedVector2Array:
 	return spots
 
 
-## Ticks until vent `i` erupts when the vent clock (CombatSim `vent_clock`:
+## Ticks until vent `i` erupts when the vent clock (MoveKit `vent_clock`:
 ## ticks the vents have run so far) reads `clock`; 0 = it erupts on this
 ## clock. The vents take turns: vent i is `i * cycle / count` ticks into the
 ## cycle, and each erupts first a whole cycle after its turn starts.

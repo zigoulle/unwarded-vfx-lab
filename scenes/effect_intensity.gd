@@ -26,8 +26,8 @@ class_name EffectIntensity
 extends RefCounted
 
 ## The knob's place on the pages.
-const SECTION := GlobalMultipliers.SECTION
-const KEY := GlobalMultipliers.EFFECT_INTENSITY
+const SECTION := "global"
+const KEY := "effect_intensity_percent"
 
 ## The kinds of look value an effect family scales.
 ## brightness: emission, glow and the colour of added (glowing) pieces;

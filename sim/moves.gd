@@ -1,5 +1,5 @@
 ## The move graph: every move a player has, and how each kind of move reads
-## its tuning section. CombatSim plays moves from it and Tuning validates their
+## its tuning section. MoveKit plays moves from it and Tuning validates their
 ## sections from it.
 ##
 ## The graph is data on the character page. Each swing is a row, a
@@ -15,20 +15,26 @@
 class_name Moves
 extends RefCounted
 
+## The game's simulation rate: 60 ticks a second (the clips play at 60 too).
+const TICK_HZ := 60
+## How hard a hit lands on an enemy (the game's enemy tiers); read only as a
+## row's `hit_tier` choice.
+const HIT_TIERS: Array[String] = ["chip", "flinch", "stagger"]
+
 ## A swing hits enemies with its hit shape in its active phase; a cancelling
 ## move pressed inside its cancel window ends it early; a light or heavy press
 ## inside its combo window chains into its next move for that button.
 const SWING := "swing"
 ## A dodge carries the player over its whole length, is invulnerable on its
 ## i-frames, and cancels a swing inside the swing's cancel window. A paid
-## dodge (CombatSim's paid cancel) is invulnerable from its own start frame
+## dodge (MoveKit's paid cancel) is invulnerable from its own start frame
 ## (`paid_iframe_start_frame`) to the same last i-frame.
 const DODGE := "dodge"
 ## A blink carries the player its distance over its whole length, invulnerable
 ## from its first frame to its last. It hits nothing and nothing cancels it.
 ## It is never pressed: a swing flows into it (`next_auto`).
 const BLINK := "blink"
-## The drink (C, CombatSim): a committed stand-still of its length that
+## The drink (C, MoveKit): a committed stand-still of its length that
 ## spends a carried potion on its first frame and heals
 ## `heal_percent_of_max_hp` of max HP on its last. It hits nothing, has no
 ## cancel window (no dodge, free or paid, gets out of it) and nothing chains
@@ -39,7 +45,7 @@ const DRINK := "drink"
 ## committed: nothing cancels it, not even a paid dodge, and it is not
 ## invulnerable. A flinch or stagger breaks the slow's cast like any move,
 ## and then the ultimate is not spent; the fusion's cast no hit breaks (its
-## hits cost HP only, CombatSim). Its section is the character's ultimate
+## hits cost HP only, MoveKit). Its section is the character's ultimate
 ## slot: `charge` names how the ultimate charges (CHARGE_KEYS: "time", a
 ## cooldown of `cooldown_s` from the moment a cast completes; "hits", the
 ## Duelist's gauge, `charge_per_enemy_struck_percent` per enemy his moves
@@ -48,7 +54,7 @@ const DRINK := "drink"
 const CAST := "cast"
 ## The fusion's end (the Duelist's split, SPLIT_MOVE): a stand-still of
 ## `split_time_s` (the slot's), committed and unbreakable as the fusion's
-## cast. Never pressed and never on a page of its own: CombatSim gives it to
+## cast. Never pressed and never on a page of its own: MoveKit gives it to
 ## a kit whose ultimate is the fusion, played at the fusion's first free
 ## moment once its time is up.
 const SPLIT := "split"
@@ -73,7 +79,7 @@ const CHANNEL := "channel"
 ## direction at `speed_m_per_s` (its travel: TRAVEL_FRAMES, the "active"
 ## phase), then `recovery_frames`. Each travel tick it hits every enemy the
 ## path it swept that tick meets (a capsule `half_width_m` either side),
-## each once per dash, and stops before unsafe ground (CombatSim._dash). Not
+## each once per dash, and stops before unsafe ground (MoveKit._dash). Not
 ## invulnerable; nothing cancels it; as a swing's `next_auto` it is armed
 ## and braked like the blink.
 const DASH := "dash"
@@ -82,7 +88,7 @@ const DASH := "dash"
 ## short of harmful ground and an edge (Ground.safe_reach: the dash's rule),
 ## and whose hit shape is two lobes on the ground, one along his facing to
 ## `reach_front_m`, one opposite to `reach_back_m`, each `lobe_arc_deg`
-## wide, nothing at his sides (CombatSim._in_shape). Its windows, chains,
+## wide, nothing at his sides (MoveKit._in_shape). Its windows, chains,
 ## targets, tier and feel keys are a swing's. `hop_height_m` and
 ## `wheel_tilt_deg` are drawn only (DuelistClips): the simulation never
 ## reads them.
@@ -92,7 +98,7 @@ const HOP := "hop"
 ## then the throw lock (its "lock" phase: LOCK_FRAMES, `lock_s` in ticks,
 ## never scaled by the tempo; attack speed shortens it, P-O's ruling 5),
 ## then `recovery_frames` after the catch. On the release the blades leave
-## his hands as a record in his state (`blades`, CombatSim._fly_blades): out
+## his hands as a record in his state (`blades`, MoveKit._fly_blades): out
 ## along his facing to `range_m` over the first half of the lock, back to
 ## wherever he stands over the second, one hit body `blade_radius_m` round
 ## them in which each of `blade_count` blades hits an enemy at most once
@@ -108,7 +114,7 @@ const THROW := "throw"
 ## (`airborne_untouchable_s`, seconds, never scaled: no enemy hit lands on
 ## him), then one landing frame (its "active" phase: every enemy within
 ## `radius_m` all round takes `damage` and is stunned `stun_s` through
-## CombatSim.stun_enemy, its shove pointing away from him), then
+## MoveKit.stun_enemy, its shove pointing away from him), then
 ## `recovery_frames`. As a swing's `next_auto` it starts once that swing's
 ## active frames end (as the tornado), armed and braked like the blink: Q
 ## before it starts brakes it, nothing ends it once it has. No cancel or
@@ -118,7 +124,7 @@ const SLAM := "slam"
 ## A shot (a charged shooter's light or heavy) is a row too, `kind = "shot"`:
 ## a swing's frames, windows and chains, its "active" frames firing where he
 ## faces instead of a hit shape: each is handed to his pack
-## (CharacterPack.advance_shot; CombatSim._advance_move). `range_m` is how far a
+## (CharacterPack.advance_shot; MoveKit._advance_move). `range_m` is how far a
 ## shot flies and `shot_radius_m` its body; its base numbers are level 1 of its
 ## charge, `*_level_2` and `*_level_3` the steps above.
 const SHOT := "shot"
@@ -156,7 +162,7 @@ const FIXED := {DODGE_MOVE: DODGE, BLINK_MOVE: BLINK, ULTIMATE_MOVE: CAST, DRINK
 ## The ways an ultimate can charge (the ultimate slot's `charge`) and the
 ## slot's keys each adds: the mage's time cooldown (`cooldown_s`), or the
 ## Duelist's gauge, filled by the enemies his moves strike
-## (`charge_per_enemy_struck_percent` each; CombatSim's Charge). A slot
+## (`charge_per_enemy_struck_percent` each; MoveKit's Charge). A slot
 ## holds only its own charge's keys (Tuning).
 const CHARGE_KEY := "charge"
 const CHARGE_TIME := "time"
@@ -175,7 +181,7 @@ const CHARGE_KEYS := {
 const FULL_GAUGE := 10000
 ## What an ultimate does when its cast completes (the slot's optional
 ## `effect`; absent = EFFECT_SLOW, the mage's) and the slot's keys each
-## effect adds: the slow (its cast's `cast_frames`, CombatSim's slow time),
+## effect adds: the slow (its cast's `cast_frames`, MoveKit's slow time),
 ## or the fusion (the Duelist's: the cast's `fusion_time_s`, then
 ## `duration_s` of his fused kit, fused; the split's `split_time_s`; the
 ## view's flash and thunder). A slot holds only its own effect's keys
@@ -244,7 +250,7 @@ const CAST_FRAMES := "cast_length"
 const SPLIT_FRAMES := "split_length"
 
 ## The buttons that start or chain moves, in press priority order: when several
-## are pressed on one tick, the first listed wins. They are CombatSim's
+## are pressed on one tick, the first listed wins. They are MoveKit's
 ## per-player input keys.
 const BUTTONS: Array[String] = ["dodge", "heavy", "light", "ultimate"]
 
@@ -266,7 +272,7 @@ const BUTTONS: Array[String] = ["dodge", "heavy", "light", "ultimate"]
 ##            and starts on the same tick
 ##   start_event: the event type its start frame emits
 ##   paid_escape (optional, default false): a paid dodge gets out of any frame
-##                of it, with no free cancel window needed (see CombatSim's
+##                of it, with no free cancel window needed (see MoveKit's
 ##                paid cancel)
 ##   follows_after (optional): as a swing's `next_auto`, it starts once that
 ##                 swing's phase of this name has ended, not the whole swing
@@ -292,7 +298,7 @@ const KINDS := {
 			"reach_m": ["number", 0.1, 20.0],
 			"arc_deg": ["number", 1.0, 360.0],
 			"targets": ["whole number", 0, 100],
-			"hit_tier": ["choice", Enemies.TIERS],
+			"hit_tier": ["choice", HIT_TIERS],
 			"damage": ["whole number", 0, 100000],
 			"stuns": ["choice", ["yes", "no"]],
 			"hitstop_frames": ["whole number", 0, 120],
@@ -327,7 +333,7 @@ const KINDS := {
 			"lobe_arc_deg": ["number", 1.0, 180.0],
 			"wheel_tilt_deg": ["number", 0.0, 90.0],
 			"targets": ["whole number", 0, 100],
-			"hit_tier": ["choice", Enemies.TIERS],
+			"hit_tier": ["choice", HIT_TIERS],
 			"damage": ["whole number", 0, 100000],
 			"stuns": ["choice", ["yes", "no"]],
 			"hitstop_frames": ["whole number", 0, 120],
@@ -351,7 +357,7 @@ const KINDS := {
 			"airborne_untouchable_s": ["number", 0.0, 10.0],
 			"recovery_frames": ["whole number", 0, 600],
 			"radius_m": ["number", 0.1, 20.0],
-			"hit_tier": ["choice", Enemies.TIERS],
+			"hit_tier": ["choice", HIT_TIERS],
 			"damage": ["whole number", 0, 100000],
 			"stun_s": ["number", 0.0, 60.0],
 			"hitstop_frames": ["whole number", 0, 120],
@@ -431,7 +437,7 @@ const KINDS := {
 			"radius_m": ["number", 0.1, 20.0],
 			"push_m": ["number", 0.0, 20.0],
 			"recovery_frames": ["whole number", 0, 600],
-			"hit_tier": ["choice", Enemies.TIERS],
+			"hit_tier": ["choice", HIT_TIERS],
 			"walk_percent": ["number", 0.0, 100.0],
 		},
 		"phases": [["channel", "channel_frames"], ["recovery", "recovery_frames"]],
@@ -450,7 +456,7 @@ const KINDS := {
 			"distance_m": ["number", 0.0, 20.0],
 			"speed_m_per_s": ["number", 1.0, 200.0],
 			"half_width_m": ["number", 0.05, 20.0],
-			"hit_tier": ["choice", Enemies.TIERS],
+			"hit_tier": ["choice", HIT_TIERS],
 			"damage": ["whole number", 0, 100000],
 			"hitstop_frames": ["whole number", 0, 120],
 			"knockback_m": ["number", 0.0, 20.0],
@@ -471,7 +477,7 @@ const KINDS := {
 			"blade_count": ["whole number", 1, 2],
 			"blade_radius_m": ["number", 0.05, 10.0],
 			"paid_dodge_escapes_lock": ["whole number", 0, 1],
-			"hit_tier": ["choice", Enemies.TIERS],
+			"hit_tier": ["choice", HIT_TIERS],
 			"damage": ["whole number", 0, 100000],
 			"hitstop_frames": ["whole number", 0, 120],
 			"knockback_m": ["number", 0.0, 20.0],
@@ -507,7 +513,7 @@ const KINDS := {
 			"shots": ["whole number", 1, 100],
 			"shots_level_2": ["whole number", 1, 100],
 			"shots_level_3": ["whole number", 1, 100],
-			"hit_tier": ["choice", Enemies.TIERS],
+			"hit_tier": ["choice", HIT_TIERS],
 			"damage": ["whole number", 0, 100000],
 			"damage_level_2": ["whole number", 0, 100000],
 			"damage_level_3": ["whole number", 0, 100000],
@@ -544,7 +550,7 @@ const KINDS := {
 			"arc_deg": ["number", 1.0, 360.0],
 			"shots": ["whole number", 1, 100],
 			"shots_per_charge_step": ["whole number", 0, 100],
-			"hit_tier": ["choice", Enemies.TIERS],
+			"hit_tier": ["choice", HIT_TIERS],
 			"damage": ["whole number", 0, 100000],
 			"hitstop_frames": ["whole number", 0, 120],
 			"knockback_m": ["number", 0.0, 20.0],
@@ -576,7 +582,7 @@ const KINDS := {
 			"shot_radius_m": ["number", 0.05, 10.0],
 			"shot_speed_m_per_s": ["number", 1.0, 200.0],
 			"arc_deg": ["number", 1.0, 360.0],
-			"hit_tier": ["choice", Enemies.TIERS],
+			"hit_tier": ["choice", HIT_TIERS],
 			"damage": ["whole number", 0, 100000],
 			"hitstop_frames": ["whole number", 0, 120],
 			"knockback_m": ["number", 0.0, 20.0],
@@ -609,7 +615,7 @@ const KINDS := {
 			"radius_m": ["number", 0.1, 20.0],
 			"radius_per_charge_step_m": ["number", 0.0, 20.0],
 			"stun_s": ["number", 0.0, 60.0],
-			"hit_tier": ["choice", Enemies.TIERS],
+			"hit_tier": ["choice", HIT_TIERS],
 			"damage": ["whole number", 0, 100000],
 			"hitstop_frames": ["whole number", 0, 120],
 			"knockback_m": ["number", 0.0, 20.0],
@@ -762,7 +768,7 @@ static func is_lob(data: Dictionary) -> bool:
 ## second entry) in a move's tuning section `data`: a fixed number as it
 ## is; a dash's travel (TRAVEL_FRAMES): its distance at its speed, in whole
 ## ticks (at least one); a key ending "_s" is seconds, rounded to frames
-## (CombatSim.TICK_HZ); a throw's lock (LOCK_FRAMES): `lock_s` in whole
+## (TICK_HZ); a throw's lock (LOCK_FRAMES): `lock_s` in whole
 ## ticks (at least two: one out, one back); the ultimate's cast
 ## (CAST_FRAMES) and the fusion's split (SPLIT_FRAMES) as those say; any
 ## other key's value, frames.
@@ -776,9 +782,9 @@ static func phase_frames(data: Dictionary, key: Variant) -> int:
 	if key == SPLIT_FRAMES:
 		return maxi(1, roundi(float(data["split_time_s"]) * 60.0))
 	if key == LOCK_FRAMES:
-		return maxi(2, roundi(float(data["lock_s"]) * CombatSim.TICK_HZ))
+		return maxi(2, roundi(float(data["lock_s"]) * TICK_HZ))
 	if key == TRAVEL_FRAMES:
-		return maxi(1, ceili(float(data["distance_m"]) / float(data["speed_m_per_s"]) * CombatSim.TICK_HZ - 0.000001))
+		return maxi(1, ceili(float(data["distance_m"]) / float(data["speed_m_per_s"]) * TICK_HZ - 0.000001))
 	if key.ends_with("_s"):
 		return roundi(float(data[key]) * 60.0)
 	return int(data[key])
@@ -851,7 +857,7 @@ static func span_frames(kind: Dictionary, data: Dictionary, span_name: String) -
 ## and everything else are left as given (a channel row's `channel_frames`
 ## and `recovery_frames` scale like a swing's phases): the dodge, the drink and the
 ## ultimate's cast are defence and design-rule timings. The result's tempo is
-## 1.0, so applying it again changes nothing (CombatSim applies it to every
+## 1.0, so applying it again changes nothing (MoveKit applies it to every
 ## tuning it is given, Boons.tuned variants included: Dagger composes on
 ## top). `[combo] light_tempo` (optional, absent 1.0; playtest 2026-10-25
 ## point 10) multiplies the tempo for the light swings only (Boons.light_rows:
@@ -865,7 +871,7 @@ static func at_tempo(tuning: Dictionary) -> Dictionary:
 	var light_tempo := float(combo.get("light_tempo", 1.0))
 	if base_tempo == 1.0 and light_tempo == 1.0:
 		return tuning
-	var lights: Array[String] = Boons.light_rows(tuning) if light_tempo != 1.0 else ([] as Array[String])
+	var lights: Array[String] = light_rows(tuning) if light_tempo != 1.0 else ([] as Array[String])
 	var out := tuning.duplicate()
 	out["combo"] = combo.duplicate()
 	out["combo"]["tempo"] = 1.0
@@ -902,7 +908,7 @@ static func at_tempo(tuning: Dictionary) -> Dictionary:
 ## reach_keys (a swing's reach, a hop's two lobes, a channel's or slam's
 ## radius, a dash's path width, the blades' body), never a travel or the
 ## throw's range. The result's percent is 100, so applying it again changes
-## nothing (CombatSim applies it to every tuning it is given, Boons.tuned
+## nothing (MoveKit applies it to every tuning it is given, Boons.tuned
 ## variants included: Greatsword composes on top). At 100 (or absent) it
 ## returns `tuning` itself; otherwise a copy.
 static func at_heavy_area(tuning: Dictionary) -> Dictionary:
@@ -1058,4 +1064,18 @@ static func fused(tuning: Dictionary) -> Dictionary:
 		if kind == SWING:
 			row["arc_deg"] = minf(360.0, float(row["arc_deg"]) * float(slot["arc_mult"]))
 		out[section] = row
+	return out
+
+
+## The sections of the light string: from `[combo] start_light` along each
+## row's `next_light`, while it names a row.
+static func light_rows(tuning: Dictionary) -> Array[String]:
+	var out: Array[String] = []
+	var move: String = str(tuning["combo"]["start_light"])
+	while move != "":
+		var section := section_of(move)
+		if not is_row(section) or not tuning.has(section) or section in out:
+			break
+		out.append(section)
+		move = str(tuning[section].get("next_light", ""))
 	return out

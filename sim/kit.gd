@@ -11,13 +11,13 @@
 ## its own page (PAGES), every section prefixed with its id and kept so in
 ## the merged values: [duelist.combo], [duelist.move.light_1], [duelist.ultimate],
 ## [duelist.parry]... Each validates as the section without its prefix would
-## (Tuning), so his rows run through the same Moves and CombatSim code as the
+## (Tuning), so his rows run through the same Moves and MoveKit code as the
 ## mage's. Everything else (walking, HP, the dodge and its meter, the blink,
 ## potions, the drink, lives, the enemies, the zone) is common to every kit.
 ##
 ## tuning_of turns merged tuning (Tuning.parse's values) into the tuning one
-## kit plays: the common sections plus its own, prefix stripped. CombatSim
-## builds one per character a player plays (CombatSim.for_character).
+## kit plays: the common sections plus its own, prefix stripped. MoveKit
+## builds one per character a player plays (MoveKit.for_character).
 class_name Kit
 extends RefCounted
 
@@ -26,17 +26,15 @@ extends RefCounted
 const MAGE := "mage"
 ## The mage's own page (Tuning.PAGES), every section named [mage.<section>].
 const MAGE_PAGE := "mage"
-## Every other character with a kit: id -> its tuning page (Tuning.PAGES).
-## The pistol shrimp's page is behind the content switch (Tuning.WATER_SHRIMP_PAGE;
-## his keys beside every kit's come from his pack, CharacterPacks.kit_keys): with
-## no page, or a page holding none of his kit, has_kit stays false.
-const PAGES := {"duelist": "duelist", "pistol_shrimp": "zones/water-shrimp"}
+## Every other character with a kit: id -> its tuning page. The lab has only
+## the Mage; a second character's page would be listed here.
+const PAGES := {}
 ## The mage's own fixed sections (the rows, [move.<name>], are his too); a
 ## character's kit has its own instead.
 const OWN_SECTIONS: Array[String] = ["combo", "ultimate"]
 
 
-## The character id `player` (a CombatSim player) plays: its `character`,
+## The character id `player` (a MoveKit player) plays: its `character`,
 ## the mage when it has none.
 static func id_of(player: Dictionary) -> String:
 	return str(player.get("character", MAGE))

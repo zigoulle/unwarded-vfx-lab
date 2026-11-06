@@ -1,15 +1,21 @@
-## The saved presets (FxPreset; spec Q5, Q6): one resource file per recipe and
-## name, res://fx/presets/<recipe>/<name>.tres (a recipe of a character pack's: in
-## his own folder, CharacterPack.presets_folder, so it follows his switch). The game loads a preset by
-## name; a move names its preset with a word value on its character's tuning
-## page (rule ["preset", recipe], resolve). The VFX lab saves, duplicates and
-## renames them; its Commit presets commits only this folder. Node-free, pure
-## static.
+## The saved presets (FxPreset): one resource file per recipe and name,
+## res://fx/presets/<recipe>/<name>.tres. The game loads a preset by name; a
+## move names its preset with a word value on its character's tuning page
+## (rule ["preset", recipe], resolve). The VFX lab saves, duplicates and
+## renames them.
+## Run from the Godot project (the editor, or Godot with --path) the lab
+## saves into the project's own folder, so a saved preset is a file to
+## commit. An exported build (the browser demo) cannot write its project:
+## it saves into the player's own folder (SAVED_FOLDER, user://; the
+## browser keeps it), and reads a preset saved there before the shipped one
+## of the same name. Node-free, pure static.
 class_name FxPresets
 extends RefCounted
 
-## The presets' folder in the game.
+## The presets' folder in the project.
 const FOLDER := "res://fx/presets"
+## Where an exported build saves (writable): the player's own copies.
+const SAVED_FOLDER := "user://fx/presets"
 ## Characters a preset's name may not hold (it is a file name).
 const FORBIDDEN := ["/", "\\", ":", "*", "?", "\"", "<", ">", "|"]
 
@@ -31,40 +37,52 @@ static func use_folder(path: String) -> void:
 	_folder = path
 
 
-## The folder `recipe`'s presets are in: its pack's for a pack's recipe, unless
-## use_folder pointed everything elsewhere.
-static func folder_of(recipe: String) -> String:
+## The folder `recipe`'s presets are saved in: folder(), or SAVED_FOLDER in
+## an exported build (its project is read-only), unless use_folder pointed
+## everything elsewhere.
+static func folder_of(_recipe: String) -> String:
 	if _folder != "":
 		return _folder
-	var own := CharacterPacks.presets_folder_of(recipe)
-	return own if own != "" else FOLDER
+	return SAVED_FOLDER if saves_to_user() else FOLDER
 
 
-## Every folder presets are saved in (the lab's Commit presets commits them all):
-## folder(), then each pack's, unless use_folder pointed everything elsewhere.
+## True when presets are saved to the player's folder (an exported build).
+static func saves_to_user() -> bool:
+	return OS.has_feature("template") and _folder == ""
+
+
+## Every folder presets are read from: the saved folder first (in an exported
+## build), then folder().
 static func folders() -> Array[String]:
-	var out: Array[String] = [folder()]
-	if _folder == "":
-		out.append_array(CharacterPacks.presets_folders())
+	var out: Array[String] = []
+	if saves_to_user():
+		out.append(SAVED_FOLDER)
+	out.append(folder())
 	return out
 
 
-## The file of `recipe`'s preset `name`.
+## The file of `recipe`'s preset `name`: the saved copy when there is one
+## (an exported build), else the project's; a new one goes where folder_of says.
 static func path_of(recipe: String, name: String) -> String:
+	for each: String in folders():
+		var path := each.path_join(recipe).path_join(name + ".tres")
+		if FileAccess.file_exists(path) or FileAccess.file_exists(path + ".remap"):
+			return path
 	return folder_of(recipe).path_join(recipe).path_join(name + ".tres")
 
 
 ## `recipe`'s saved presets' names, sorted.
 static func names(recipe: String) -> Array[String]:
 	var out: Array[String] = []
-	var dir := folder_of(recipe).path_join(recipe)
-	if not DirAccess.dir_exists_absolute(dir):
-		return out
-	for f: String in DirAccess.get_files_at(dir):
-		# An export may keep a converted resource's original name as a remap.
-		var file := f.trim_suffix(".remap")
-		if file.get_extension() == "tres" and not file.get_basename() in out:
-			out.append(file.get_basename())
+	for each: String in folders():
+		var dir := each.path_join(recipe)
+		if not DirAccess.dir_exists_absolute(dir):
+			continue
+		for f: String in DirAccess.get_files_at(dir):
+			# An export keeps a converted resource's original name as a remap.
+			var file := f.trim_suffix(".remap")
+			if file.get_extension() == "tres" and not file.get_basename() in out:
+				out.append(file.get_basename())
 	out.sort()
 	return out
 
@@ -135,7 +153,7 @@ static func save(preset: FxPreset, name: String) -> String:
 		return bad
 	if preset.recipe == "" or name_error(preset.recipe) != "":
 		return "A preset needs its recipe's name to be saved: \"%s\"." % preset.recipe
-	var path := path_of(preset.recipe, name)
+	var path := folder_of(preset.recipe).path_join(preset.recipe).path_join(name + ".tres")
 	DirAccess.make_dir_recursive_absolute(path.get_base_dir())
 	# Saved from a copy, so the file is never tied to the edited resource's path.
 	var copy := preset.duplicate(true) as FxPreset
@@ -160,7 +178,10 @@ static func rename(recipe: String, name: String, new_name: String) -> String:
 	var error := duplicate_preset(recipe, name, new_name)
 	if error != "":
 		return error
-	var removed := DirAccess.remove_absolute(path_of(recipe, name))
+	var old := path_of(recipe, name)
+	if not old.begins_with(folder_of(recipe)):
+		return "Saved as \"%s\"; \"%s\" ships with the lab and stays." % [new_name, name]
+	var removed := DirAccess.remove_absolute(old)
 	return "" if removed == OK else "Saved as \"%s\" but \"%s\" could not be removed (%s)." % [new_name, name,
 		error_string(removed)]
 

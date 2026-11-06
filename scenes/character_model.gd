@@ -38,7 +38,7 @@ func _warm_ribbon(draw: ImmediateMesh, material: Material, uv2: bool) -> void:
 ## hitstop and tick factor) on `kit`, the clip retimed on the move's frame data:
 ## a character's own clip choice. The mage's by default; the mage and the Duelist
 ## are drawn by theirs directly (PlayerAvatar), a pack's character through here.
-func clip_pose(kit: CombatSim, state: Dictionary) -> Dictionary:
+func clip_pose(kit: MoveKit, state: Dictionary) -> Dictionary:
 	return MageClips.pose(kit, state, markers)
 
 
@@ -79,12 +79,12 @@ func strike_hit(_at: Vector3) -> void:
 	pass
 
 
-## The kit `kit` (the player's own CombatSim: his character, boons, rage
-## and fusion, CombatSim.for_player) and the common [look] values `look`:
+## The kit `kit` (the player's own MoveKit: his character, boons, rage
+## and fusion, MoveKit.for_player) and the common [look] values `look`:
 ## every input the model's move effects read. The one path that feeds them,
 ## in a run, in the capture scene and in the character select alike
 ## (PlayerAvatar calls it each frame). Nothing by default.
-func read_kit(_kit: CombatSim, _look: Dictionary) -> void:
+func read_kit(_kit: MoveKit, _look: Dictionary) -> void:
 	pass
 
 
@@ -96,11 +96,11 @@ func take_shake_kicks() -> Array:
 	return []
 
 
-## A pack's character's effects from its kit's state (CombatSim.KIT_STATE), each drawn
+## A pack's character's effects from its kit's state (MoveKit.KIT_STATE), each drawn
 ## frame. `view`: {move, move_frame, move_tick, position (his ground point), heading, facing,
 ## ground, to_world (ground points to the world), now_tick, tick_factor, actor, low, down,
-## kit_ints (CombatSim.KIT_INTS as this peer sees them)}. Nothing by default.
-func show_kit_state(_kit: CombatSim, _state: Dictionary, _view: Dictionary) -> void:
+## kit_ints (MoveKit.KIT_INTS as this peer sees them)}. Nothing by default.
+func show_kit_state(_kit: MoveKit, _state: Dictionary, _view: Dictionary) -> void:
 	pass
 
 

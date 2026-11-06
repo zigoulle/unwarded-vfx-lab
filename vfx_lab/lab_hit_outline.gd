@@ -1,6 +1,6 @@
 ## The move's real hit area as a thin outline on the lab's floor (VFX
 ## all-spells ticket 15; spec: "read from the same page the game uses"):
-## the shape the simulation hits with, from the move's data (CombatSim
+## the shape the simulation hits with, from the move's data (MoveKit
 ## move_data) round the caster facing -Z (the lab's caster):
 ##   - a swing: a pie slice reach_m deep and arc_deg wide (a full circle at 360);
 ##   - a channel or a slam: a circle of radius_m;
