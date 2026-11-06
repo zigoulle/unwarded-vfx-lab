@@ -22,6 +22,13 @@ game_time={
 "value": 0.0
 }
 
+[rendering]
+
+; Desktop draws with Forward+ (Godot's default); the browser with
+; Compatibility (WebGL 2), the only renderer the web build has.
+renderer/rendering_method="forward_plus"
+renderer/rendering_method.web="gl_compatibility"
+
 [display]
 
 window/size/viewport_width=1152
