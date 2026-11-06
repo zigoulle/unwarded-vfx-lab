@@ -165,6 +165,7 @@ func _ready() -> void:
 	var loaded := Tuning.load_folder(_folder)
 	if loaded.error != "":
 		_readout.text = "Tuning page error\n\n" + loaded.error
+		push_error(loaded.error)
 		return
 	_tuning = loaded.values
 	# The effect intensity knob at the pages' level: glow and flash as played.
