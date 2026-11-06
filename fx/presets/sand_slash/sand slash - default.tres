@@ -1,0 +1,29 @@
+[gd_resource type="Resource" script_class="FxPreset" format=3]
+
+[ext_resource type="Script" path="res://fx/fx_preset.gd" id="1_r4yoi"]
+
+[resource]
+script = ExtResource("1_r4yoi")
+recipe = "sand_slash"
+core_colour = Color(1, 0.85, 0.55, 1)
+edge_colour = Color(1, 0.72, 0.28, 1)
+form_s = 0.1
+hold_s = 0.2
+fade_s = 0.4
+intensity = 0.69
+knobs = {
+"arc_x": 1.0,
+"band_gap_m": 0.12,
+"band_m": 0.19,
+"bands": 2,
+"ender_tilt_deg": 50.0,
+"grain_life_s": 0.5,
+"grain_size_m": 0.1,
+"grain_speed": 1.2,
+"grains": 60,
+"height_m": 1.0,
+"opacity": 0.9,
+"radius_x": 0.5,
+"streaks": 4,
+"wobble_m": 0.03
+}

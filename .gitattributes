@@ -1,0 +1,16 @@
+* text=auto
+*.import text eol=lf
+*.tscn text eol=lf
+*.tres text eol=lf
+*.gd text eol=lf
+*.gdshader text eol=lf
+*.gdshaderinc text eol=lf
+*.godot text eol=lf
+*.uid text eol=lf
+*.cfg text eol=lf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+*.glb binary
+*.png binary
+*.jpg binary
+*.gif binary

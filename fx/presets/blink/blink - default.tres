@@ -1,0 +1,30 @@
+[gd_resource type="Resource" script_class="FxPreset" format=3]
+
+[ext_resource type="Script" path="res://fx/fx_preset.gd" id="1_hwpjq"]
+
+[resource]
+script = ExtResource("1_hwpjq")
+recipe = "blink"
+core_colour = Color(0.5921569, 0.8509804, 1, 1)
+edge_colour = Color(0.3, 0.6, 0.95, 1)
+form_s = 0.2
+hold_s = 0.2
+fade_s = 0.4
+knobs = {
+"band_gap_m": 0.12,
+"bands": 2,
+"burst_s": 0.3,
+"burst_x": 0.43571428571428567,
+"height_m": 0.9,
+"opacity": 0.55,
+"puff_life_s": 0.45,
+"puff_size_m": 0.22,
+"puff_x": 0.17142857142857143,
+"puffs": 50,
+"shake_m": 0.0,
+"shake_s": 0.2,
+"streaks": 4,
+"tail": 0.15,
+"width_m": 0.6000000000000001,
+"wobble_m": 0.04
+}

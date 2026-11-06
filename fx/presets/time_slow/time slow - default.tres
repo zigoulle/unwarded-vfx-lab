@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="FxPreset" format=3]
+
+[ext_resource type="Script" path="res://fx/fx_preset.gd" id="1_xn1p5"]
+
+[resource]
+script = ExtResource("1_xn1p5")
+recipe = "time_slow"
+core_colour = Color(1, 0.8, 0.42, 1)
+edge_colour = Color(1, 0.8, 0.38, 1)
+form_s = 0.41
+hold_s = 1.0
+fade_s = 1.5
+knobs = {
+"height_m": 3.04,
+"marker": 0.2,
+"marker_in_s": 0.24,
+"marker_other": 0.1,
+"pulse_m": 0.0,
+"pulse_s": 0.4,
+"shards": 23,
+"shatter_s": 0.51,
+"sparkle_life_s": 0.59,
+"sparkle_size_m": 0.18,
+"sparkles": 20
+}

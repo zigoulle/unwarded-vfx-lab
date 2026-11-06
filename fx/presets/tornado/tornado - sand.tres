@@ -1,0 +1,33 @@
+[gd_resource type="Resource" script_class="FxPreset" format=3]
+
+[ext_resource type="Script" path="res://fx/fx_preset.gd" id="1_hwpjq"]
+
+[resource]
+script = ExtResource("1_hwpjq")
+recipe = "tornado"
+core_colour = Color(0.98, 0.84, 0.55, 1)
+edge_colour = Color(0.78, 0.55, 0.28, 1)
+form_s = 0.31
+hold_s = 1.0
+fade_s = 1.51
+intensity = 0.79
+trigger_offset_s = 0.29000000000000004
+knobs = {
+"band_m": 0.19,
+"bands": 6,
+"flare_x": 6.0,
+"floor_swirl_x": 1.0,
+"foot_x": 0.2,
+"grain_size_m": 0.05,
+"grain_speed": 3.0,
+"grains": 97,
+"height_m": 3.0,
+"opacity": 0.9,
+"rock_rise_m_s": 2.1,
+"rock_size_m": 0.3,
+"rocks": 20,
+"spin": 1.7,
+"streaks": 6,
+"twist": 4.0,
+"wobble_m": 0.08
+}

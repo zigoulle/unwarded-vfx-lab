@@ -1,0 +1,6 @@
+# Godot's editor and import cache, rebuilt on first open
+.godot/
+# Web build output (the Pages workflow builds its own)
+build/
+# Never commit secrets
+.env

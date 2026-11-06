@@ -1,0 +1,32 @@
+; Engine configuration file.
+; The Unwarded VFX lab, standalone. Open this folder in Godot 4.7.
+
+config_version=5
+
+[application]
+
+config/name="Unwarded VFX Lab"
+run/main_scene="res://vfx_lab/vfx_lab.tscn"
+config/features=PackedStringArray("4.7")
+
+[autoload]
+
+; The lab's clock (scenes/game_clock.gd): the effects' shaders animate on it.
+GameClock="*res://scenes/game_clock.gd"
+
+[shader_globals]
+
+; The lab's seconds (GameClock): the world's shaders animate on it instead of TIME.
+game_time={
+"type": "float",
+"value": 0.0
+}
+
+[display]
+
+window/size/viewport_width=1152
+window/size/viewport_height=648
+window/size/window_width_override=1600
+window/size/window_height_override=900
+window/stretch/mode="canvas_items"
+window/stretch/aspect="expand"

@@ -1,0 +1,167 @@
+{
+  "note": "Written by tools/blender/bake_mage.py; see docs/dev-notes/art-pipeline.md.",
+  "frame": "glTF / Godot: +Y up, metres, origin at the feet, facing +Z",
+  "height_m": 0.804,
+  "clips": {
+    "idle": {
+      "frames": 121,
+      "fps": 60,
+      "loop": true,
+      "start": 0,
+      "hit": 0,
+      "end": 120,
+      "source": "keyed:tools/blender/key_mage.py"
+    },
+    "run": {
+      "frames": 25,
+      "fps": 60,
+      "loop": true,
+      "start": 0,
+      "hit": 0,
+      "end": 24,
+      "source": "keyed:tools/blender/key_mage.py"
+    },
+    "slash_1": {
+      "frames": 33,
+      "fps": 60,
+      "loop": false,
+      "start": 0,
+      "hit": 10,
+      "end": 32,
+      "source": "keyed:tools/blender/key_mage.py"
+    },
+    "slash_2": {
+      "frames": 35,
+      "fps": 60,
+      "loop": false,
+      "start": 0,
+      "hit": 10,
+      "end": 34,
+      "source": "keyed:tools/blender/key_mage.py"
+    },
+    "slash_3": {
+      "frames": 47,
+      "fps": 60,
+      "loop": false,
+      "start": 0,
+      "hit": 14,
+      "end": 46,
+      "source": "keyed:tools/blender/key_mage.py"
+    },
+    "whirlwind": {
+      "frames": 53,
+      "fps": 60,
+      "loop": false,
+      "start": 0,
+      "hit": 20,
+      "end": 52,
+      "source": "keyed:tools/blender/key_mage.py"
+    },
+    "whirlwind_2": {
+      "frames": 55,
+      "fps": 60,
+      "loop": false,
+      "start": 0,
+      "hit": 16,
+      "end": 54,
+      "source": "keyed:tools/blender/key_mage.py"
+    },
+    "tornado": {
+      "frames": 121,
+      "fps": 60,
+      "loop": true,
+      "start": 0,
+      "hit": 0,
+      "end": 120,
+      "source": "keyed:tools/blender/key_mage.py"
+    },
+    "ground_shake": {
+      "frames": 73,
+      "fps": 60,
+      "loop": false,
+      "start": 0,
+      "hit": 28,
+      "end": 72,
+      "source": "keyed:tools/blender/key_mage.py"
+    },
+    "cast": {
+      "frames": 41,
+      "fps": 60,
+      "loop": false,
+      "start": 0,
+      "hit": 40,
+      "end": 40,
+      "source": "keyed:tools/blender/key_mage.py"
+    },
+    "hit": {
+      "frames": 31,
+      "fps": 60,
+      "loop": false,
+      "start": 0,
+      "hit": 0,
+      "end": 30,
+      "source": "keyed:tools/blender/key_mage.py"
+    },
+    "stagger": {
+      "frames": 61,
+      "fps": 60,
+      "loop": false,
+      "start": 0,
+      "hit": 0,
+      "end": 60,
+      "source": "keyed:tools/blender/key_mage.py"
+    },
+    "defeat": {
+      "frames": 91,
+      "fps": 60,
+      "loop": false,
+      "start": 0,
+      "hit": 0,
+      "end": 90,
+      "source": "keyed:tools/blender/key_mage.py"
+    },
+    "dash": {
+      "frames": 13,
+      "fps": 60,
+      "loop": false,
+      "start": 0,
+      "hit": 8,
+      "end": 12,
+      "source": "keyed:tools/blender/key_mage.py"
+    }
+  },
+  "run_stride_m_per_s": 2.539,
+  "cloth": [
+    {
+      "chain": "robe_front",
+      "root": "DEF-robe_front.001",
+      "end": "DEF-robe_front.003"
+    },
+    {
+      "chain": "robe_back",
+      "root": "DEF-robe_back.001",
+      "end": "DEF-robe_back.003"
+    },
+    {
+      "chain": "scarf",
+      "root": "DEF-scarf.001",
+      "end": "DEF-scarf.002"
+    }
+  ],
+  "staff": {
+    "bone": "DEF-staff",
+    "grip_position": [
+      -0.17104,
+      0.53792,
+      0.05556
+    ],
+    "rotation_xyzw": [
+      0.001954,
+      -0.0,
+      0.004608,
+      0.999987
+    ],
+    "scale": 1.0,
+    "note": "Rest pose, skeleton space: put mage-staff.glb here, then keep it on the bone."
+  }
+}

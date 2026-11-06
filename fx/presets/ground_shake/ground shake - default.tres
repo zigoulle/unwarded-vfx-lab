@@ -1,0 +1,28 @@
+[gd_resource type="Resource" script_class="FxPreset" format=3]
+
+[ext_resource type="Script" path="res://fx/fx_preset.gd" id="1_hwpjq"]
+
+[resource]
+script = ExtResource("1_hwpjq")
+recipe = "ground_shake"
+core_colour = Color(0.78, 0.66, 0.5, 1)
+edge_colour = Color(0.78, 0.66, 0.5, 1)
+size = 1.01
+form_s = 0.2
+hold_s = 0.6
+fade_s = 1.21
+knobs = {
+"burst_s": 0.5,
+"burst_x": 1.0,
+"cracks": 10,
+"crack_tint": 1.0,
+"cracks_x": 0.40909090909090906,
+"dust": 47,
+"dust_life_s": 0.89,
+"dust_ring_x": 0.09090909090909093,
+"dust_size_m": 0.35,
+"dust_x": 0.4545454545454546,
+"jag": 0.25,
+"shake_m": 0.02,
+"shake_s": 0.3
+}

@@ -1,0 +1,37 @@
+[gd_resource type="Resource" script_class="FxPreset" format=3]
+
+[ext_resource type="Script" path="res://fx/fx_preset.gd" id="1_hwpjq"]
+
+[resource]
+script = ExtResource("1_hwpjq")
+recipe = "whirlwind"
+core_colour = Color(1, 0.85, 0.55, 1)
+edge_colour = Color(1, 0.72, 0.28, 1)
+form_s = 0.17
+hold_s = 0.2
+fade_s = 0.4
+intensity = 0.8
+knobs = {
+"arc_deg": 360.0,
+"band_gap_m": 0.15,
+"band_m": 1.0,
+"bands": 2,
+"burst_s": 0.35,
+"burst_x": 1.6071428571428572,
+"dust": 32,
+"dust_life_s": 0.9,
+"dust_size_m": 0.35,
+"dust_x": 0.7142857142857143,
+"grain_life_s": 0.5,
+"grain_size_m": 0.1,
+"grain_speed": 1.5,
+"grains": 31,
+"height_m": 0.9,
+"opacity": 0.85,
+"radius_x": 0.625,
+"shake_m": 0.005,
+"shake_s": 0.25,
+"start_deg": 0.0,
+"streaks": 5,
+"wobble_m": 0.04
+}
